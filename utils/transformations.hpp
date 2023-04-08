@@ -63,17 +63,21 @@ namespace gl
     };
 
     // 3D perspective matrix given a field of view, aspect ratio, near and far planes
-    static mat4 getPerspectiveMat(float fov, float aspect, float zNear, float zFar)
+    // Renderman is a little bit different
+    // -1 - 1 for x & y, but 0 - 1 for z
+    static mat4 getPerspectiveMat(float fov, float aspect, float hither, float yon)
     {
-        float f = 1 / tan(fov / 2);
+
         return mat4{
-            f / aspect, 0, 0, 0,
-            0, f, 0, 0,
-            0, 0, (zFar + zNear) / (zNear - zFar), (2 * zFar * zNear) / (zNear - zFar),
+            1 / tan(fov / 2), 0, 0, 0,
+            0, 1 / tan(fov / (2 * aspect)), 0, 0,
+            0, 0, yon / (yon - hither), -yon * hither / (yon - hither),
             0, 0, -1, 0};
     };
 
     // 3D orthographic matrix given a left, right, bottom, top, near and far planes
+    // probably not used in this project
+    // since this one is for OpenGL style
     static mat4 getOrthoMat(float left, float right, float bottom, float top, float zNear, float zFar)
     {
         return mat4{
