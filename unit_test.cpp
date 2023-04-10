@@ -10,40 +10,80 @@
 
 int main()
 {
-    Vertex v_0;
-    v_0.position = {-1.5f, 0.5f, 10.0f};
+    Sphere sphere;
+    sphere.scale = gl::vec3(.8f);
+    sphere.position = gl::vec3(0.0f, 0.0f, 3.0f);
+
+    uint width = 1000;
+    uint height = 1000;
+
     PerspectiveCamera p_cam(gl::to_radian(45.0f), 1.0f, 0.1f, 100.0f);
-    // std::cout << p_cam.getViewMat() << std::endl;
-    // std::cout << p_cam.getProjectionMat() << std::endl;
+    gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
 
-    // single vertex doesn't require model matrix
-    gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat();
-    gl::vec4 v_0_clip = mvp * gl::vec4(v_0.position, 1.0f);
-    // std::cout << v_0_clip << std::endl;
-
-    // from clip space to ndc space
-    gl::vec4 v_0_ndc = v_0_clip / v_0_clip.w();
-    // std::cout << v_0_ndc << std::endl;
-
-    // from ndc space to screen space
-    gl::vec4 v_0_screen = (v_0_ndc + 1.0f) / 2.0f;
-    v_0_screen.z() = v_0_ndc.z();
-    std::cout << v_0_screen << std::endl;
-
+    gl::vec3 v_world(-1, 1.0, 4.0);
+    gl::vec2 v_screen = gl::getScreenCoord(v_world, mvp, width, height);
     int key = 0;
-
     while (key != 27)
     {
-        cv::Mat image(100, 100, CV_32FC3, cv::Scalar(0.0f, 0.0f, 0.0f));
+        cv::Mat image(width, height, CV_32FC3, cv::Scalar(0.0f, 0.0f, 0.0f));
         image.convertTo(image, CV_8UC3, 1.0f);
-        // set the color of the pixel, of the v_0_screen
-        std::cout << (int)(v_0_screen.y() * 100) << " " << (int)(v_0_screen.x() * 100) << std::endl;
-        image.at<cv::Vec3b>((int)(v_0_screen.y() * 100), (int)(v_0_screen.x() * 100)) = cv::Vec3b(255, 255, 255);
+
+        auto [w, h] = sphere.getResolution();
+        for (int i = 0; i < w; i++)
+        {
+            for (int j = 0; j < h; j++)
+            {
+                auto v = sphere.getVertex(i, j);
+                auto v_screen = gl::getScreenCoord(v.position, mvp, width, height);
+                image.at<cv::Vec3b>((int)v_screen.y(), (int)(v_screen.x())) = cv::Vec3b((int)(v_screen.y() / width * 255), (int)(v_screen.x() / width * 255), 255.0f);
+            }
+        }
 
         cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
         cv::imshow("image", image);
         auto key = cv::waitKey(1000);
     }
+
+    // std::cout << p_cam.getViewMat() << std::endl;
+    // std::cout << p_cam.getProjectionMat() << std::endl;
+
+    // single vertex doesn't require model matrix
+    // gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat();
+    // gl::vec4 v_0_clip = mvp * gl::vec4(v_0.position, 1.0f);
+    // // std::cout << v_0_clip << std::endl;
+
+    // // from clip space to ndc space
+    // gl::vec4 v_0_ndc = v_0_clip / v_0_clip.w();
+    // // std::cout << v_0_ndc << std::endl;
+
+    // // from ndc space to screen space
+    // gl::vec4 v_0_screen = (v_0_ndc + 1.0f) / 2.0f;
+    // v_0_screen.z() = v_0_ndc.z();
+
+    // while (key != 27)
+    // {
+
+    // cv::Mat image(400, 400, CV_32FC3, cv::Scalar(0.0f, 0.0f, 0.0f));
+    // image.convertTo(image, CV_8UC3, 1.0f);
+    // // set the color of the pixel, of the
+    // for (int i = 0; i < sphere.getVertexCount(); i++)
+    // {
+    //     //Vertex v = sphere.getVertex(i);
+    //     // std::cout << v.position << std::endl;
+
+    //     gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
+    //     gl::vec4 v_pos = mvp * gl::vec4(v.position, 1.0f);
+    //     v_pos = v_pos / v_pos.w();
+    //     gl::vec4 v_screen = (v_pos + 1.0f) / 2.0f;
+    //     v_screen.z() = v_pos.z();
+
+    //     image.at<cv::Vec3b>((int)(v_screen.y() * 400), (int)(v_screen.x() * 400)) = cv::Vec3b((int)(v_screen.y() * 255), (int)(v_screen.x() * 255), 1.0f);
+    // }
+
+    // cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
+    // cv::imshow("image", image);
+    // auto key = cv::waitKey(1000);
+    // }
 
     // below are unit test for vec class
     // gl::vec2 v2(1.0f, 1.0f);

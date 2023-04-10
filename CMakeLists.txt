@@ -6,7 +6,7 @@ include_directories(./base)
 
 # used for image reading and writing
 find_package(OpenCV REQUIRED)
-set(BASE ./base/object3D.cpp ./base/camera.cpp ./base/framebuffer.cpp)
+set(BASE ./base/object3D.cpp ./base/camera.cpp ./base/framebuffer.cpp ./base/primitive.cpp)
 
 # Add main.cpp file of project root directory as source file
 set(SOURCE_FILES ./unit_test.cpp)

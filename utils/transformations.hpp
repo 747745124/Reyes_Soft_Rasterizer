@@ -116,4 +116,14 @@ namespace gl
     {
         return translation3D(position) * rotation.to_mat4() * scale3D(scale);
     }
+
+    // returns the converted screen coord ranging from 0 to max_width and 0 to max_height
+    // fp32 precision
+    static gl::vec2 getScreenCoord(gl::vec3 worldCoord, gl::mat4 mvp, int width, int height)
+    {
+        gl::vec4 clipCoord = mvp * gl::vec4(worldCoord, 1.0f);
+        gl::vec4 ndcCoord = gl::vec4(clipCoord) / clipCoord.w();
+        gl::vec2 screenCoord = gl::vec2((ndcCoord[0] + 1.0f) / 2.0f * width, (ndcCoord[1] + 1.0f) / 2.0f * height);
+        return screenCoord;
+    }
 };

@@ -3,11 +3,26 @@
 
 class Sphere : public Mesh
 {
+public:
     Sphere();
-    ~Sphere();
+    ~Sphere() = default;
+
+    int getVertexCount() const
+    {
+        return V_SEGMENTS * U_SEGMENTS;
+    };
+
+    Vertex getVertex(uint u, uint v) const
+    {
+        return _grids[u][v];
+    };
+
+    std::tuple<uint, uint> getResolution() const
+    {
+        return std::make_tuple(U_SEGMENTS, V_SEGMENTS);
+    };
 
 private:
-    const int Y_SEGMENTS = 50;
-    const int X_SEGMENTS = 50;
-    std::vector<Vertex> _vertices;
+    uint V_SEGMENTS = 50;
+    uint U_SEGMENTS = 50;
 };

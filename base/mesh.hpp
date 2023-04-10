@@ -5,6 +5,7 @@
 class Mesh : public Object3D
 {
 
-private:
-    std::vector<Vertex> _vertices;
+protected:
+    std::vector<std::vector<Vertex>> _grids;
+    std::vector<size_t> _indices;
 };
