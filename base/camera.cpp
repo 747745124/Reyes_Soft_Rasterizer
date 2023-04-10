@@ -10,7 +10,7 @@ PerspectiveCamera::PerspectiveCamera(float fov, float aspect, float zNear, float
 
 gl::mat4 PerspectiveCamera::getProjectionMat() const
 {
-    return gl::getPerspectiveMat(fov, aspect, zNear, zFar);
+    return gl::getPerspectiveMatLH(fov, aspect, zNear, zFar);
 }
 
 OrthographicCamera::OrthographicCamera(

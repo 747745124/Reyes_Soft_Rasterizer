@@ -63,15 +63,26 @@ namespace gl
     };
 
     // 3D perspective matrix given a field of view, aspect ratio, near and far planes
-    // Renderman is a little bit different
-    // -1 - 1 for x & y, but 0 - 1 for z
-    static mat4 getPerspectiveMat(float fov, float aspect, float hither, float yon)
+    // Renderman is a little bit different (LH)
+    // -1  ～ 1 for x & y, but 0 ～ 1 for z
+    static mat4 getPerspectiveMatLH(float fov, float aspect, float hither, float yon)
+    {
+
+        return mat4{
+            1 / tan(fov / 2), 0, 0, 0,
+            0, 1 / (aspect * tan(fov / 2)), 0, 0,
+            0, 0, yon / (yon - hither), -yon * hither / (yon - hither),
+            0, 0, 1, 0};
+    };
+
+    // opengl style perspective matrix (RH)
+    static mat4 getPerspectiveMatRH(float fov, float aspect, float znear, float zfar)
     {
 
         return mat4{
             1 / tan(fov / 2), 0, 0, 0,
             0, 1 / tan(fov / (2 * aspect)), 0, 0,
-            0, 0, yon / (yon - hither), -yon * hither / (yon - hither),
+            0, 0, -(zfar + znear) / (zfar - znear), -2 * zfar * znear / (zfar - znear),
             0, 0, -1, 0};
     };
 

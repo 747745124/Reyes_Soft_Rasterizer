@@ -3,3 +3,8 @@
 #include "./utils/quat.hpp"
 #include "./utils/transformations.hpp"
 #include "./base/object3D.hpp"
+#include "./base/vertex.hpp"
+#include "./base/camera.hpp"
+#include "./base/framebuffer.hpp"
+#include "./base/mesh.hpp"
+#include <opencv2/opencv.hpp>

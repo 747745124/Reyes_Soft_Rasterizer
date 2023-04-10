@@ -1,7 +1,50 @@
 #include "./unit_test.hpp"
 
+// void processInput(int key, gl::vec3 &pos)
+// {
+//     if (key == 'W' || key == 'w')
+//     {
+//         pos.x() += 1.0f;
+//     }
+// };
+
 int main()
 {
+    Vertex v_0;
+    v_0.position = {-1.5f, 0.5f, 10.0f};
+    PerspectiveCamera p_cam(gl::to_radian(45.0f), 1.0f, 0.1f, 100.0f);
+    // std::cout << p_cam.getViewMat() << std::endl;
+    // std::cout << p_cam.getProjectionMat() << std::endl;
+
+    // single vertex doesn't require model matrix
+    gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat();
+    gl::vec4 v_0_clip = mvp * gl::vec4(v_0.position, 1.0f);
+    // std::cout << v_0_clip << std::endl;
+
+    // from clip space to ndc space
+    gl::vec4 v_0_ndc = v_0_clip / v_0_clip.w();
+    // std::cout << v_0_ndc << std::endl;
+
+    // from ndc space to screen space
+    gl::vec4 v_0_screen = (v_0_ndc + 1.0f) / 2.0f;
+    v_0_screen.z() = v_0_ndc.z();
+    std::cout << v_0_screen << std::endl;
+
+    int key = 0;
+
+    while (key != 27)
+    {
+        cv::Mat image(100, 100, CV_32FC3, cv::Scalar(0.0f, 0.0f, 0.0f));
+        image.convertTo(image, CV_8UC3, 1.0f);
+        // set the color of the pixel, of the v_0_screen
+        std::cout << (int)(v_0_screen.y() * 100) << " " << (int)(v_0_screen.x() * 100) << std::endl;
+        image.at<cv::Vec3b>((int)(v_0_screen.y() * 100), (int)(v_0_screen.x() * 100)) = cv::Vec3b(255, 255, 255);
+
+        cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
+        cv::imshow("image", image);
+        auto key = cv::waitKey(1000);
+    }
+
     // below are unit test for vec class
     // gl::vec2 v2(1.0f, 1.0f);
     // gl::vec3 v3(1.0f, 2.0f, 3.0f);
@@ -61,18 +104,19 @@ int main()
     // // matrix inverse
     // std::cout << m4_4.inversed() << std::endl;
 
-    Object3D obj;
-    std::cout << obj.getFront() << std::endl;
-    std::cout << obj.getUp() << std::endl;
-    std::cout << obj.getRight() << std::endl;
+    // Object3D obj;
+    // std::cout << obj.getFront() << std::endl;
+    // std::cout << obj.getUp() << std::endl;
+    // std::cout << obj.getRight() << std::endl;
     // std::cout << obj.getModelMat() << std::endl;
 
-    std::cout << std::endl;
-    // rotate the object around the y axis, 45 degrees to radian
-    obj.rotation = gl::Quat::fromAxisAngle({0.0f, 1.0f, 0.0f}, gl::to_radian(45.0f));
-    std::cout << obj.getFront() << std::endl;
-    std::cout << obj.getUp() << std::endl;
-    std::cout << obj.getRight() << std::endl;
-    // std::cout << obj.getModelMat() << std::endl;
+    // std::cout << std::endl;
+    // // rotate the object around the y axis, 45 degrees to radian
+    //  obj.rotation = gl::Quat::fromAxisAngle({0.0f, 1.0f, 0.0f}, gl::to_radian(45.0f));
+    //  std::cout << obj.getFront() << std::endl;
+    //  std::cout << obj.getUp() << std::endl;
+    //  std::cout << obj.getRight() << std::endl;
+    //  std::cout << obj.getModelMat() << std::endl;
+
     return 0;
 }

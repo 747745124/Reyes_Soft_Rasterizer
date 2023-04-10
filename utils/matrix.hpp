@@ -112,6 +112,24 @@ namespace gl
             data[3] = v4;
         }
 
+        vec(const vec<N, T> &other)
+        {
+            for (int i = 0; i < N; i++)
+            {
+                data[i] = other[i];
+            }
+        }
+
+        vec(const vec<N - 1, T> &other, T v)
+        {
+            for (int i = 0; i < (N - 1); i++)
+            {
+                data[i] = other[i];
+            }
+
+            data[N - 1] = v;
+        }
+
         vec(std::initializer_list<T> list)
         {
             int i = 0;
@@ -180,6 +198,30 @@ namespace gl
     private:
         std::array<T, N> data;
     };
+
+    template <int N, class T>
+    bool operator==(const vec<N, T> &lhs, const vec<N, T> &rhs)
+    {
+        bool result = true;
+        for (int i = 0; i < N; i++)
+        {
+            result = result && (lhs[i] == rhs[i]);
+        }
+
+        return result;
+    }
+
+    template <int N, class T>
+    bool operator!=(const vec<N, T> &lhs, const vec<N, T> &rhs)
+    {
+        bool result = false;
+        for (int i = 0; i < N; i++)
+        {
+            result = result || (lhs[i] != rhs[i]);
+        }
+
+        return result;
+    }
 
     template <int N, class T>
     vec<N, T> operator+(const vec<N, T> &lhs, const vec<N, T> &rhs)
