@@ -14,40 +14,57 @@
 int main()
 {
 
-    Paraboloid sphere(1.0, 0.2, .7, gl::to_radian(360.0f));
-    sphere.scale = gl::vec3(1.6f);
-    sphere.position = gl::vec3(0.0f, 0.0f, 4.0f);
-    gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(-90.0f));
-    sphere.rotation = q * sphere.rotation;
-    auto [w, h] = sphere.getResolution();
+    //////////////////////////////////////////
+    // Below are general test code for extended framebuffer class, with m*n samples
+    //////////////////////////////////////////
 
-    uint width = 800;
-    uint height = 800;
+    FrameBuffer fb(800, 800, 4, 4);
+    std::cout << fb.getSampleNumber() << std::endl;
 
-    PerspectiveCamera p_cam(gl::to_radian(45.0f), 1.0f, 0.1f, 100.0f);
-    gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
+        return 0;
 
-    int key = 0;
-    while (key != 27)
-    {
-        FrameBuffer fb(width, height);
+    //////////////////////////////////////////
+    // Below are general test code for custom framebuffer class
+    //////////////////////////////////////////
 
-        for (int i = 0; i < w; i++)
-        {
-            for (int j = 0; j < h; j++)
-            {
-                auto v = sphere.getVertex(i, j);
-                auto v_screen = gl::getScreenCoord(v.position, mvp, width, height);
-                // doing sample in this place
-                fb.setPixelColor((int)v_screen.x(), (int)(v_screen.y()), gl::vec3(1.0f, 0.0f, 0.0f));
-            }
-        }
+    // Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f));
+    // sphere.scale = gl::vec3(0.9f);
+    // sphere.position = gl::vec3(0.0f, 0.0f, 4.0f);
+    // gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(-90.0f));
+    // sphere.rotation = q * sphere.rotation;
+    // auto [w, h] = sphere.getResolution();
 
-        auto img = gl::to_cv_mat(fb);
-        cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
-        cv::imshow("image", img);
-        auto key = cv::waitKey(1000);
-    }
+    // uint width = 800;
+    // uint height = 800;
+
+    // PerspectiveCamera p_cam(gl::to_radian(45.0f), 1.0f, 0.1f, 100.0f);
+    // gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
+
+    // int key = 0;
+    // while (key != 27)
+    // {
+    //     FrameBuffer fb(width, height);
+
+    //     for (int i = 0; i < w; i++)
+    //     {
+    //         for (int j = 0; j < h; j++)
+    //         {
+    //             auto v = sphere.getVertex(i, j);
+    //             auto v_screen = gl::getScreenCoord(v.position, mvp, width, height);
+    //             // doing sample in this place
+    //             fb.setPixelColor((int)v_screen.x(), (int)(v_screen.y()), gl::vec3(1.0f, 0.0f, 0.0f));
+    //         }
+    //     }
+
+    //     auto img = fb.to_cv_mat();
+    //     cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
+    //     cv::imshow("image", img);
+    //     auto key = cv::waitKey(1000);
+    // }
+
+    //////////////////////////////////////////
+    // Below are general test code for getScreenCoord function
+    //////////////////////////////////////////
 
     // int key = 0;
     // while (key != 27)
@@ -70,6 +87,10 @@ int main()
     //     cv::imshow("image", image);
     //     auto key = cv::waitKey(1000);
     // }
+
+    //////////////////////////////////////////
+    // Below are general test code for transformation functions
+    //////////////////////////////////////////
 
     // std::cout << p_cam.getViewMat() << std::endl;
     // std::cout << p_cam.getProjectionMat() << std::endl;
@@ -112,7 +133,10 @@ int main()
     // auto key = cv::waitKey(1000);
     // }
 
-    // below are unit test for vec class
+    //////////////////////////////////////////
+    // Below are general test code for vec and mat class
+    //////////////////////////////////////////
+
     // gl::vec2 v2(1.0f, 1.0f);
     // gl::vec3 v3(1.0f, 2.0f, 3.0f);
     // gl::vec4 v4(1.0f, 1.0f, 1.0f, 1.0f);

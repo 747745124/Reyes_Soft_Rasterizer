@@ -1,29 +1,12 @@
 #pragma once
 #include "./transformations.hpp"
 #include "./matrix.hpp"
-#include "../base/framebuffer.hpp"
 #include <opencv2/opencv.hpp>
+#include <random>
 
 namespace gl
 {
-    // suppose color is vec3 and range 0~1
-    static cv::Mat to_cv_mat(FrameBuffer &fb)
-    {
-        cv::Mat image(fb.getWidth(), fb.getHeight(), CV_32FC3, cv::Scalar(0.0f, 0.0f, 0.0f));
-        image.convertTo(image, CV_8UC3, 1.0f);
-        for (uint i = 0; i < fb.getWidth(); i++)
-        {
-            for (uint j = 0; j < fb.getHeight(); j++)
-            {
-                auto color = fb.getPixelColor(i, j);
-                image.at<cv::Vec3b>(i, j) = cv::Vec3b(color.x() * 255, color.y() * 255, color.z() * 255);
-            }
-        }
-        cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-        return image;
-    };
-
-    float sign(gl::vec2 p1, gl::vec2 p2, gl::vec2 p3)
+    static float sign(gl::vec2 p1, gl::vec2 p2, gl::vec2 p3)
     {
         return (p1.x() - p3.x()) * (p2.y() - p3.y()) - (p2.x() - p3.x()) * (p1.y() - p3.y());
     }
@@ -41,4 +24,30 @@ namespace gl
         return all_neg || all_pos;
     }
 
+    // random number from 0 to 1
+    static float rand_num()
+    {
+        std::random_device rd;  // Will be used to obtain a seed for the random number engine
+        std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+        std::uniform_real_distribution<> dist(0, 1);
+        return dist(gen);
+    }
+
+    // random number from 0 to end_point
+    static float rand_num(float end_point)
+    {
+        std::random_device rd;  // Will be used to obtain a seed for the random number engine
+        std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+        std::uniform_real_distribution<> dist(0, end_point);
+        return dist(gen);
+    }
+
+    // random number from start_point to end_point
+    static float rand_num(float start_point, float end_point)
+    {
+        std::random_device rd;  // Will be used to obtain a seed for the random number engine
+        std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+        std::uniform_real_distribution<> dist(start_point, end_point);
+        return dist(gen);
+    }
 };

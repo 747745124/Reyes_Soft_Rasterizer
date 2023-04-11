@@ -19,3 +19,18 @@ struct Vertex
         return position == other.position && normal == other.normal && texCoords == other.texCoords;
     }
 };
+
+struct Quad
+{
+    Vertex v0;
+    Vertex v1;
+    Vertex v2;
+    Vertex v3;
+    Quad(Vertex v0, Vertex v1, Vertex v2, Vertex v3)
+    {
+        this->v0 = v0;
+        this->v1 = v1;
+        this->v2 = v2;
+        this->v3 = v3;
+    }
+};
