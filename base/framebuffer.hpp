@@ -25,6 +25,11 @@ public:
         return this->sample_offset.size();
     };
 
+    std::vector<gl::vec2> getSampleOffset() const
+    {
+        return this->sample_offset;
+    };
+
     uint getWidth() const
     {
         return this->width;

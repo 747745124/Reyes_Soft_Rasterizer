@@ -33,6 +33,15 @@ public:
         return std::make_tuple(U_SEGMENTS, V_SEGMENTS);
     };
 
+    // get the micropolygon starting from the bottom left corner
+    // this ensures that the micropolygon is always counter-clockwise
+    // and only visited once across the mesh
+    Micropolygon getMicropolygon(uint u, uint v) const
+    {
+        assert((u + 1) < U_SEGMENTS && (v + 1) < V_SEGMENTS);
+        return Micropolygon(_grids[u][v], _grids[u + 1][v], _grids[u + 1][v + 1], _grids[u][v + 1]);
+    };
+
 protected:
     uint V_SEGMENTS = 50;
     uint U_SEGMENTS = 50;

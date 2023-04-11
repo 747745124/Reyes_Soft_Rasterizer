@@ -11,6 +11,8 @@ namespace gl
         return (p1.x() - p3.x()) * (p2.y() - p3.y()) - (p2.x() - p3.x()) * (p1.y() - p3.y());
     }
 
+    // check if a point is inside a rectangle
+    // note that p1 p2 p3 p4 must be in clockwise order or counter clockwise order
     static bool is_inside_rect(gl::vec2 sample, gl::vec2 p1, gl::vec2 p2, gl::vec2 p3, gl::vec2 p4)
     {
         auto d1 = sign(sample, p1, p2);
