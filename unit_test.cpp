@@ -8,41 +8,68 @@
 //     }
 // };
 
+// gl::vec3 v_world(-1, 1.0, 4.0);
+// gl::vec2 v_screen = gl::getScreenCoord(v_world, mvp, width, height);
+
 int main()
 {
-    Sphere sphere;
-    sphere.scale = gl::vec3(.8f);
-    sphere.position = gl::vec3(0.0f, 0.0f, 3.0f);
 
-    uint width = 1000;
-    uint height = 1000;
+    Paraboloid sphere(1.0, 0.2, .7, gl::to_radian(360.0f));
+    sphere.scale = gl::vec3(1.6f);
+    sphere.position = gl::vec3(0.0f, 0.0f, 4.0f);
+    gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(-90.0f));
+    sphere.rotation = q * sphere.rotation;
+    auto [w, h] = sphere.getResolution();
+
+    uint width = 800;
+    uint height = 800;
 
     PerspectiveCamera p_cam(gl::to_radian(45.0f), 1.0f, 0.1f, 100.0f);
     gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
 
-    gl::vec3 v_world(-1, 1.0, 4.0);
-    gl::vec2 v_screen = gl::getScreenCoord(v_world, mvp, width, height);
     int key = 0;
     while (key != 27)
     {
-        cv::Mat image(width, height, CV_32FC3, cv::Scalar(0.0f, 0.0f, 0.0f));
-        image.convertTo(image, CV_8UC3, 1.0f);
+        FrameBuffer fb(width, height);
 
-        auto [w, h] = sphere.getResolution();
         for (int i = 0; i < w; i++)
         {
             for (int j = 0; j < h; j++)
             {
                 auto v = sphere.getVertex(i, j);
                 auto v_screen = gl::getScreenCoord(v.position, mvp, width, height);
-                image.at<cv::Vec3b>((int)v_screen.y(), (int)(v_screen.x())) = cv::Vec3b((int)(v_screen.y() / width * 255), (int)(v_screen.x() / width * 255), 255.0f);
+                // doing sample in this place
+                fb.setPixelColor((int)v_screen.x(), (int)(v_screen.y()), gl::vec3(1.0f, 0.0f, 0.0f));
             }
         }
 
-        cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-        cv::imshow("image", image);
+        auto img = gl::to_cv_mat(fb);
+        cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
+        cv::imshow("image", img);
         auto key = cv::waitKey(1000);
     }
+
+    // int key = 0;
+    // while (key != 27)
+    // {
+    //     cv::Mat image(width, height, CV_32FC3, cv::Scalar(0.0f, 0.0f, 0.0f));
+    //     image.convertTo(image, CV_8UC3, 1.0f);
+
+    //     auto [w, h] = sphere.getResolution();
+    //     for (int i = 0; i < w; i++)
+    //     {
+    //         for (int j = 0; j < h; j++)
+    //         {
+    //             auto v = sphere.getVertex(i, j);
+    //             auto v_screen = gl::getScreenCoord(v.position, mvp, width, height);
+    //             image.at<cv::Vec3b>((int)v_screen.x(), (int)(v_screen.y())) = cv::Vec3b((int)(v.position.x() * 255), (int)(v.position.y() * 255), 255);
+    //         }
+    //     }
+
+    //     cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
+    //     cv::imshow("image", image);
+    //     auto key = cv::waitKey(1000);
+    // }
 
     // std::cout << p_cam.getViewMat() << std::endl;
     // std::cout << p_cam.getProjectionMat() << std::endl;
@@ -157,6 +184,9 @@ int main()
     //  std::cout << obj.getUp() << std::endl;
     //  std::cout << obj.getRight() << std::endl;
     //  std::cout << obj.getModelMat() << std::endl;
+
+    // this test has to pass the points in order to get the correct result
+    // std::cout << gl::is_inside_rect({0.0, 0.0}, {0.0, 0.0}, {1.0, 0.0}, {1.0, 1.0}, {0.0, 1.0}) << std::endl;
 
     return 0;
 }

@@ -14,8 +14,8 @@ class FrameBuffer
 {
 public:
     FrameBuffer(uint width, uint height);
-    void setColor(gl::vec2 screen_pos, gl::vec3 color);
-    void setDepth(gl::vec2 screen_pos, float depth);
+    void setPixelColor(uint u, uint v, gl::vec3 color);
+    void setPixelDepth(uint u, uint v, float depth);
 
     uint getWidth() const
     {
@@ -28,14 +28,16 @@ public:
     };
 
     // the input should be 2 integers
-    gl::vec3 getColor(gl::vec2 screen_pos) const
+    gl::vec3 getPixelColor(uint u, uint v) const
     {
-        return this->_color_buffer[(int)screen_pos.x()][(int)screen_pos.y()];
+        return this->_color_buffer[u][v];
     };
 
 private:
+    std::vector<std::vector<gl::vec2>> _samples;
     std::vector<std::vector<gl::vec3>> _color_buffer;
     std::vector<std::vector<float>> _depth_buffer;
     uint width;
     uint height;
+    uint spp; // samples per pixel
 };

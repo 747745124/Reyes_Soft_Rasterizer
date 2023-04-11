@@ -1,6 +1,5 @@
 #pragma once
 #include "../utils/matrix.hpp"
-
 struct Vertex
 {
     gl::vec3 position;
