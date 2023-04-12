@@ -1,13 +1,72 @@
 #include "./unit_test.hpp"
+// #define TEST_BILINEAR
+#define TEST_SAMPLING
+// #define TEST_SAMPLE_VIS
+// #define TEST_FRAMEBUFFER
 int main()
 {
-    FrameBuffer fb(800, 800, 2, 2);
+
+#ifdef TEST_BILINEAR
+    {
+        using namespace gl;
+        vec3 x2y2(1.0f, 1.0f, 1.0f);
+        vec3 x2y1(1.0f, 0.0f, 0.0f);
+        vec3 x1y2(0.0f, 1.0f, 0.0f);
+        vec3 x1y1(0.0f, 0.0f, 1.0f);
+
+        vec2 screen_coord(0.5,0.5);
+
+        std::cout<< get_depth_bilinear(screen_coord, x1y1, x2y1, x2y2, x1y2) << std::endl;
+
+    }
+ #endif
+
+#ifdef TEST_SAMPLING
+    {   
+        //MSAA 16x
+        FrameBuffer fb(800, 800, 4, 4);
+        Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f), 1000, 1000);
+        //Hyperboloid sphere(gl::vec3(-1.f,-1.f,-1.f),gl::vec3(1.f,1.f,1.f),gl::to_radian(360.0f), 1000, 1000);
+
+        sphere.scale = gl::vec3(0.9f);
+        sphere.position = gl::vec3(0.0f, 0.0f, 4.0f);
+        gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
+        sphere.rotation = q * sphere.rotation;
+
+        auto [w, h] = sphere.getResolution();
+        uint width = 800;
+        uint height = 800;
+
+        PerspectiveCamera p_cam(gl::to_radian(45.0f), (float)width/(float)height, 0.1f, 100.0f);
+        gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
+
+        fb.clearColor();
+        fb.clearBuffer(buffer_type::depth);
+
+        // loop over micropolygons
+        for (int i = 0; i < w; i++)
+        {
+            for (int j = 0; j < h; j++)
+            {
+                auto mpoly = sphere.getMicropolygon(i, j);
+                fb.updateBufferByMicropolygon(mpoly,mvp);
+            }
+        }
+
+        fb.setPixelColorFromBuffer();
+        auto img = fb.to_cv_mat();
+        cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
+        cv::imshow("image", img);
+        cv::waitKey();
+    }
+
+#endif
 
     //////////////////////////////////////////
     // Below are general test code for visualizing samples
     //////////////////////////////////////////
 
-#ifdef TEST_SAMPLE
+#ifdef TEST_SAMPLE_VIS
     {
         FrameBuffer fb(800, 800, 4, 4);
         std::cout << fb.getSampleNumber() << std::endl;
@@ -55,7 +114,7 @@ int main()
 
 #ifdef TEST_FRAMEBUFFER
     {
-        Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f));
+        Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f), 50, 50);
         sphere.scale = gl::vec3(0.9f);
         sphere.position = gl::vec3(0.0f, 0.0f, 4.0f);
         gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(-90.0f));
@@ -79,8 +138,8 @@ int main()
                 {
                     auto v = sphere.getVertex(i, j);
                     auto v_screen = gl::getScreenCoord(v.position, mvp, width, height);
-                    // doing sample in this place
-                    fb.setPixelColor((int)v_screen.x(), (int)(v_screen.y()), gl::vec3(1.0f, 0.0f, 0.0f));
+                    // setting up white color, no sampling
+                    fb.setPixelColor((int)v_screen.x(), (int)(v_screen.y()), gl::vec3(1.0f, 1.0f, 1.0f));
                 }
             }
 

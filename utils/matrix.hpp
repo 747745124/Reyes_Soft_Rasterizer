@@ -7,7 +7,7 @@
 #include <iostream>
 
 // @description: a simple implmentation of vec and mat class
-// try to conform to the style of glm
+// Conform to the style of glm
 // @author: Shaokang
 namespace gl
 {
@@ -62,6 +62,31 @@ namespace gl
         {
             assert(data.size() == 4);
             return data[3];
+        }
+
+        //below accessor are pass by value
+        vec<2, T> xy()
+        {
+            assert(data.size() >= 2);
+            return vec<2, T>{data[0], data[1]};
+        }
+
+        vec<2, T> rg()
+        {
+            assert(data.size() >= 2);
+            return vec<2, T>{data[0], data[1]};
+        }
+
+        vec<3, T> xyz()
+        {
+            assert(data.size() >= 3);
+            return vec<3, T>{data[0], data[1], data[2]};
+        }
+
+        vec<2, T> rgb()
+        {
+            assert(data.size() >= 3);
+            return vec<3, T>{data[0], data[1], data[2]};
         }
 
         float operator[](size_t i) const
@@ -150,6 +175,16 @@ namespace gl
             return result;
         }
 
+        // divide equal
+        vec<N, T>& operator/=(const float divisor)
+        {
+            for (int i = 0; i < N; i++)
+            {
+                this->data[i]/=divisor;
+            }
+            return *this;
+        }
+
         // length of a vector
         float length() const
         {
@@ -193,6 +228,17 @@ namespace gl
                 result[i] = -this->data[i];
             }
             return result;
+        }
+
+        // add equal
+        vec<N, T>& operator+=(vec<N, T> other)
+        {
+            for (int i = 0; i < N; i++)
+            {
+                this->data[i]+=other[i];
+            }
+
+            return *this;
         }
 
     private:

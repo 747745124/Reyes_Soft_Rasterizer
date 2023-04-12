@@ -10,7 +10,9 @@ public:
         this->U_SEGMENTS = u_segments;
         this->V_SEGMENTS = v_segments;
 
-        // resize the grids
+        // resize the grids, _grids can be indexed by [u][v]
+        // u from 0 to U_SEGMENTS
+        // v from 0 to V_SEGMENTS
         _grids.resize(U_SEGMENTS + 1);
         for (int i = 0; i < U_SEGMENTS + 1; i++)
         {
@@ -20,11 +22,12 @@ public:
 
     int getVertexCount() const
     {
-        return V_SEGMENTS * U_SEGMENTS;
+        return (V_SEGMENTS+1) * (U_SEGMENTS+1);
     };
 
     Vertex getVertex(uint u, uint v) const
-    {
+    {   
+        assert(u <= U_SEGMENTS && v <= V_SEGMENTS);
         return _grids[u][v];
     };
 
@@ -38,7 +41,7 @@ public:
     // and only visited once across the mesh
     Micropolygon getMicropolygon(uint u, uint v) const
     {
-        assert((u + 1) < U_SEGMENTS && (v + 1) < V_SEGMENTS);
+        assert(u < U_SEGMENTS && v < V_SEGMENTS);
         return Micropolygon(_grids[u][v], _grids[u + 1][v], _grids[u + 1][v + 1], _grids[u][v + 1]);
     };
 

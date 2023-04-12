@@ -52,4 +52,22 @@ namespace gl
         std::uniform_real_distribution<> dist(start_point, end_point);
         return dist(gen);
     }
+
+    //biliner interpolation
+    static float bilinear(float w1,float w2,float w3,float w4,float q1,float q2,float q3,float q4){
+        return (w1*q1+w2*q2+w3*q3+w4*q4)/(w1+w2+w3+w4);
+    }
+
+    //approximated bilinear interpolation, projected micropolygon may not be rectangular
+    static float get_depth_bilinear(gl::vec2 sample_coord, gl::vec3 p1, gl::vec3 p2,gl::vec3 p3,gl::vec3 p4){
+        float w1 = (p3.x()-sample_coord.x())*(p3.y()-sample_coord.y())/((p3.x()-p1.x())*(p3.y()-p1.y()));
+        float w2 = (sample_coord.x()-p4.x())*(p3.y()-sample_coord.y())/((p3.x()-p1.x())*(p3.y()-p1.y()));
+        float w3 = (sample_coord.x()-p1.x())*(sample_coord.y()-p1.y())/((p3.x()-p1.x())*(p3.y()-p1.y()));
+        float w4 = (p2.x()-sample_coord.x())*(sample_coord.y()-p1.y())/((p3.x()-p1.x())*(p3.y()-p1.y()));
+        float q1 = p1.z();
+        float q2 = p2.z();
+        float q3 = p3.z();
+        float q4 = p4.z();
+        return bilinear(w1,w2,w3,w4,q1,q2,q3,q4);
+    };
 };

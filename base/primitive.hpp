@@ -49,9 +49,9 @@ public:
         if (zmax < radius)
             phi_max = asinf(zmax / radius);
 
-        for (int y = 0; y < V_SEGMENTS; y++)
+        for (int y = 0; y <= V_SEGMENTS; y++)
         {
-            for (int x = 0; x < U_SEGMENTS; x++)
+            for (int x = 0; x <= U_SEGMENTS; x++)
             {
                 float u_seg = (float)x / (float)U_SEGMENTS;
                 float v_seg = (float)y / (float)V_SEGMENTS;
@@ -80,9 +80,9 @@ public:
     Cylinder(float radius, float zmin, float zmax, float thetamax, uint u_segments = 50, uint v_segments = 50) : Mesh(u_segments, v_segments)
     {
 
-        for (int y = 0; y < V_SEGMENTS; y++)
+        for (int y = 0; y <= V_SEGMENTS; y++)
         {
-            for (int x = 0; x < U_SEGMENTS; x++)
+            for (int x = 0; x <= U_SEGMENTS; x++)
             {
                 float u_seg = (float)x / (float)U_SEGMENTS;
                 float v_seg = (float)y / (float)V_SEGMENTS;
@@ -110,9 +110,9 @@ public:
     Cone(float height, float radius, float thetamax, uint u_segments = 50, uint v_segments = 50) : Mesh(u_segments, v_segments)
     {
 
-        for (int y = 0; y < V_SEGMENTS; y++)
+        for (int y = 0; y <= V_SEGMENTS; y++)
         {
-            for (int x = 0; x < U_SEGMENTS; x++)
+            for (int x = 0; x <= U_SEGMENTS; x++)
             {
                 float u_seg = (float)x / (float)U_SEGMENTS;
                 float v_seg = (float)y / (float)V_SEGMENTS;
@@ -137,12 +137,12 @@ public:
 class Hyperboloid : public Mesh
 {
 public:
-    Hyperboloid(gl::vec2 point1, gl::vec2 point2, float thetamax, uint u_segments = 50, uint v_segments = 50) : Mesh(u_segments, v_segments)
+    Hyperboloid(gl::vec3 point1, gl::vec3 point2, float thetamax, uint u_segments = 50, uint v_segments = 50) : Mesh(u_segments, v_segments)
     {
 
-        for (int y = 0; y < V_SEGMENTS; y++)
+        for (int y = 0; y <= V_SEGMENTS; y++)
         {
-            for (int x = 0; x < U_SEGMENTS; x++)
+            for (int x = 0; x <= U_SEGMENTS; x++)
             {
                 float u_seg = (float)x / (float)U_SEGMENTS;
                 float v_seg = (float)y / (float)V_SEGMENTS;
@@ -169,9 +169,9 @@ public:
     Paraboloid(float rmax, float zmin, float zmax, float thetamax, uint u_segments = 50, uint v_segments = 50) : Mesh(u_segments, v_segments)
     {
 
-        for (int y = 0; y < V_SEGMENTS; y++)
+        for (int y = 0; y <= V_SEGMENTS; y++)
         {
-            for (int x = 0; x < U_SEGMENTS; x++)
+            for (int x = 0; x <= U_SEGMENTS; x++)
             {
                 float u_seg = (float)x / (float)U_SEGMENTS;
                 float v_seg = (float)y / (float)V_SEGMENTS;
@@ -196,9 +196,9 @@ public:
     Disk(float height, float radius, float thetamax, uint u_segments = 50, uint v_segments = 50) : Mesh(u_segments, v_segments)
     {
 
-        for (int y = 0; y < V_SEGMENTS; y++)
+        for (int y = 0; y <= V_SEGMENTS; y++)
         {
-            for (int x = 0; x < U_SEGMENTS; x++)
+            for (int x = 0; x <= U_SEGMENTS; x++)
             {
                 float u_seg = (float)x / (float)U_SEGMENTS;
                 float v_seg = (float)y / (float)V_SEGMENTS;
@@ -223,9 +223,9 @@ public:
     Torus(float major_radius, float minor_radius, float phi_min, float phi_max, float theta_max, uint u_segments = 50, uint v_segments = 50) : Mesh(u_segments, v_segments)
     {
 
-        for (int y = 0; y < V_SEGMENTS; y++)
+        for (int y = 0; y <= V_SEGMENTS; y++)
         {
-            for (int x = 0; x < U_SEGMENTS; x++)
+            for (int x = 0; x <= U_SEGMENTS; x++)
             {
                 float u_seg = (float)x / (float)U_SEGMENTS;
                 float v_seg = (float)y / (float)V_SEGMENTS;
