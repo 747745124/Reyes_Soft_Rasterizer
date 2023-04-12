@@ -83,7 +83,7 @@ namespace gl
             return vec<3, T>{data[0], data[1], data[2]};
         }
 
-        vec<2, T> rgb()
+        vec<3, T> rgb()
         {
             assert(data.size() >= 3);
             return vec<3, T>{data[0], data[1], data[2]};

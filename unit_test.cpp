@@ -1,10 +1,68 @@
 #include "./unit_test.hpp"
+#define TEST_ALPHA
 // #define TEST_BILINEAR
-#define TEST_SAMPLING
+// #define TEST_SAMPLING
 // #define TEST_SAMPLE_VIS
 // #define TEST_FRAMEBUFFER
 int main()
 {
+    
+
+
+#ifdef TEST_ALPHA
+ {   
+        //MSAA 16x
+        FrameBuffer fb(800, 800, 4, 4);
+        Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f), 100, 100);
+        Cylinder cylinder(1.0, 0.0, 1.0, gl::to_radian(360.0f), 100, 100);
+        //Hyperboloid sphere(gl::vec3(-1.f,-1.f,-1.f),gl::vec3(1.f,1.f,1.f),gl::to_radian(360.0f), 1000, 1000);
+
+        {
+            sphere.scale = gl::vec3(0.9f);
+            sphere.position = gl::vec3(0.0f, 0.0f, 4.0f);
+            gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
+            sphere.rotation = q * sphere.rotation;
+        }
+
+        {
+            cylinder.scale = gl::vec3(0.2f);
+            cylinder.position = gl::vec3(0.5f, 0.5f, 2.0f);
+            gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(.0f));
+            cylinder.rotation = q * sphere.rotation;
+        }
+
+        const auto [w, h] = sphere.getResolution();
+        uint width = 800;
+        uint height = 800;
+
+        PerspectiveCamera p_cam(gl::to_radian(45.0f), (float)width/(float)height, 0.1f, 100.0f);
+        gl::mat4 mvp_sp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
+        gl::mat4 mvp_cy = p_cam.getProjectionMat() * p_cam.getViewMat() * cylinder.getModelMat();
+
+        fb.clearColor();
+        fb.clearBuffer(buffer_type::depth);
+        fb.clearBuffer(buffer_type::color);
+
+        // loop over micropolygons
+        for (int i = 0; i < w; i++)
+        {
+            for (int j = 0; j < h; j++)
+            {
+                auto mp_sp = sphere.getMicropolygon(i, j);
+                auto mp_cy = cylinder.getMicropolygon(i, j);
+                fb.updateBufferByMicropolygon(mp_cy,mvp_cy);
+                fb.updateBufferByMicropolygon(mp_sp,mvp_sp);
+            }
+        }
+
+        fb.setPixelColorFromBuffer();
+        auto img = fb.to_cv_mat();
+        cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
+        cv::imshow("image", img);
+        cv::waitKey();
+    }
+
+#endif
 
 #ifdef TEST_BILINEAR
     {
@@ -25,31 +83,45 @@ int main()
     {   
         //MSAA 16x
         FrameBuffer fb(800, 800, 4, 4);
-        Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f), 1000, 1000);
+        Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f), 100, 100);
+        Cylinder cylinder(1.0, 0.0, 1.0, gl::to_radian(360.0f), 100, 100);
         //Hyperboloid sphere(gl::vec3(-1.f,-1.f,-1.f),gl::vec3(1.f,1.f,1.f),gl::to_radian(360.0f), 1000, 1000);
 
-        sphere.scale = gl::vec3(0.9f);
-        sphere.position = gl::vec3(0.0f, 0.0f, 4.0f);
-        gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
-        sphere.rotation = q * sphere.rotation;
+        {
+            sphere.scale = gl::vec3(0.9f);
+            sphere.position = gl::vec3(0.0f, 0.0f, 4.0f);
+            gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
+            sphere.rotation = q * sphere.rotation;
+        }
 
-        auto [w, h] = sphere.getResolution();
+        {
+            cylinder.scale = gl::vec3(0.2f);
+            cylinder.position = gl::vec3(0.5f, 0.5f, 2.0f);
+            gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(.0f));
+            cylinder.rotation = q * sphere.rotation;
+        }
+
+        const auto [w, h] = sphere.getResolution();
         uint width = 800;
         uint height = 800;
 
         PerspectiveCamera p_cam(gl::to_radian(45.0f), (float)width/(float)height, 0.1f, 100.0f);
-        gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
+        gl::mat4 mvp_sp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
+        gl::mat4 mvp_cy = p_cam.getProjectionMat() * p_cam.getViewMat() * cylinder.getModelMat();
 
         fb.clearColor();
         fb.clearBuffer(buffer_type::depth);
+        fb.clearBuffer(buffer_type::color);
 
         // loop over micropolygons
         for (int i = 0; i < w; i++)
         {
             for (int j = 0; j < h; j++)
             {
-                auto mpoly = sphere.getMicropolygon(i, j);
-                fb.updateBufferByMicropolygon(mpoly,mvp);
+                auto mp_sp = sphere.getMicropolygon(i, j);
+                auto mp_cy = cylinder.getMicropolygon(i, j);
+                fb.updateBufferByMicropolygon(mp_cy,mvp_cy);
+                fb.updateBufferByMicropolygon(mp_sp,mvp_sp);
             }
         }
 

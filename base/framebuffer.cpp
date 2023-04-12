@@ -26,26 +26,36 @@ void FrameBuffer::initBuffers(){
     {
         for (uint j = 0; j < height; j++)
         {
-            this->_buffers[i][j] = std::vector<Sample>(this->getSampleNumber(), Sample());
+            this->_buffers[i][j] = std::vector<std::vector<Sample>>(this->getSampleNumber(), std::vector<Sample>(1,Sample()));
         }
     }
 };
 
+//it's more like a dump color buffer to pixel color, since color buffer is cleared
 void FrameBuffer::setPixelColorFromBuffer(){
-    clearColor();
 
+    clearColor();
     for (uint i = 0; i < width; i++)
     {
         for (uint j = 0; j < height; j++)
         {
             for (uint k = 0; k < this->getSampleNumber(); k++)
-            {
-                this->_pixel_color[i][j] += this->_buffers[i][j][k].color;
+            {   
+
+                sort(this->_buffers[i][j][k].begin(), this->_buffers[i][j][k].end(), [](Sample a, Sample b) {
+                    return a.depth < b.depth;
+                });
+
+                gl::vec4 sample_color = this->_buffers[i][j][k][0].color;
+
+                //alpha blending
+                this->_pixel_color[i][j] += sample_color.rgb();
             }
 
             this->_pixel_color[i][j] /= (float)this->getSampleNumber();
         }
     }
+
 };
 
 void FrameBuffer::setSampleNumber(uint m, uint n)
@@ -76,8 +86,9 @@ void FrameBuffer::clearBuffer(buffer_type b_type)
             for (uint j = 0; j < height; j++)
             {
                 for (uint k = 0; k < this->getSampleNumber(); k++)
-                {
-                    this->_buffers[i][j][k].color = gl::vec3(0.0);
+                {   
+                    this->_buffers[i][j][k].clear();
+                    this->_buffers[i][j][k].push_back(Sample());
                 }
             }
         }
@@ -88,7 +99,8 @@ void FrameBuffer::clearBuffer(buffer_type b_type)
             {
                 for (uint k = 0; k < this->getSampleNumber(); k++)
                 {
-                    this->_buffers[i][j][k].depth = 1.0;
+                    this->_buffers[i][j][k].clear();
+                    this->_buffers[i][j][k].push_back(Sample());
                 }
             }
         }
@@ -122,12 +134,14 @@ void FrameBuffer::updateBufferByMicropolygon(Micropolygon &mp,gl::mat4 mvp){
                 float sample_depth = 0.25*(projected_mp_pos[0].z()+projected_mp_pos[1].z()+projected_mp_pos[2].z()+projected_mp_pos[3].z());
                 if(isfinite(sample_depth)&&sample_depth<=1.0&&sample_depth>=0.0){
                     //if sample point if further than zbuffer, skip
-                    if(sample_depth>=_buffers[i][j][k].depth)
-                        continue;
+                    // if(sample_depth>=_buffers[i][j][k].depth)
+                    //     continue;
+
+                    _buffers[i][j][k].push_back(Sample(sample_depth,gl::vec4(mp.v0.position,1.0f)));
 
                     //suceessfully sample a point,update the buffer
-                    _buffers[i][j][k].depth = sample_depth;
-                    _buffers[i][j][k].color = mp.v0.position;
+                    // _buffers[i][j][k].depth = sample_depth;
+                    // _buffers[i][j][k].color = gl::vec4(mp.v0.position,1.0f);
                 }
             }
         }

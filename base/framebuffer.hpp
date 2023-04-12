@@ -11,14 +11,14 @@ struct Sample
 {
     float depth;
     //in rgba format
-    gl::vec3 color;
+    gl::vec4 color;
 
     void setDepth(float d)
     {
         this->depth = d;
     };
 
-    void setColor(gl::vec3 c)
+    void setColor(gl::vec4 c)
     {
         this->color = c;
     };
@@ -26,7 +26,13 @@ struct Sample
     Sample()
     {
         this->depth = 1.0;
-        this->color = gl::vec3(0.0);
+        this->color = gl::vec4(gl::vec3(0.0f),1.0f);
+    }
+
+    Sample(float depth, gl::vec4 color)
+    {
+        this->depth = depth;
+        this->color = color;
     }
 };
 
@@ -102,8 +108,9 @@ private:
 
     // per pixel color buffer, all 0s by constructor default
     std::vector<std::vector<gl::vec3>> _pixel_color;
-    // per sample buffers (color,depth), index by pixel coordinate, and then sample index
-    std::vector<std::vector<std::vector<Sample>>> _buffers;
+    // per sample buffers (color,depth), index by pixel coordinate
+    // and then sample index, and then all the intersected data for that sample
+    std::vector<std::vector<std::vector<std::vector<Sample>>>> _buffers;
 
     uint width;
     uint height;
