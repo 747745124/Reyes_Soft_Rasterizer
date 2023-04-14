@@ -1,13 +1,29 @@
 #include "./unit_test.hpp"
+#define TEST_TEXTURE
 // #define TEST_SHADER
-#define TEST_DICING
+// #define TEST_DICING
 // #define TEST_ALPHA
 // #define TEST_BILINEAR
 // #define TEST_SAMPLING
 // #define TEST_SAMPLE_VIS
 // #define TEST_FRAMEBUFFER
+// #define TEST_MVP
+// #define TEST_VEC
+
 int main()
 {
+#ifdef TEST_SHADER
+
+
+#endif
+
+#ifdef TEST_TEXTURE
+
+#endif
+
+    //////////////////////////////////////////
+    // Below are general test code for Adaptive Dicing
+    //////////////////////////////////////////
 
 #ifdef TEST_DICING
     {
@@ -44,13 +60,13 @@ int main()
             {
                 gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * cylinder.getModelMat();
                 auto span = cylinder.getProjectedBoundingVolumeSpan(mvp, width, height);
-                cylinder.dice((uint)span.x(),(uint)span.y(),0.1f);
+                cylinder.dice((uint)span.x(),(uint)span.y(),2.f);
             }
         }
 
 
         fb.clearColor();
-        fb.clearBuffer(buffer_type::depth, 1.0f, gl::vec4(gl::vec3(0.4,0.6,0.2),1.0));
+        fb.clearBuffer(1.0f, gl::vec4(gl::vec3(0.4,0.6,0.2),1.0));
 
         // loop over micropolygons of sphere
         {   
@@ -89,14 +105,9 @@ int main()
     }
 #endif
 
-#ifdef TEST_SHADER
-
-
-
-
-
-#endif
-
+    //////////////////////////////////////////
+    // Below are general test code for Alpha Blending
+    //////////////////////////////////////////
 
 #ifdef TEST_ALPHA
 
@@ -110,8 +121,8 @@ int main()
         //MSAA
         FrameBuffer fb(width, height, 2, 2);
 
-        Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f), 3,3);
-        Cylinder cylinder(1.0, -1.0, 1.0, gl::to_radian(360.0f), 3, 3);
+        Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f), 30,30);
+        Cylinder cylinder(1.0, -1.0, 1.0, gl::to_radian(360.0f), 30, 30);
 
         {
             sphere.scale = gl::vec3(0.9f);
@@ -128,26 +139,22 @@ int main()
         }
 
         gl::mat4 mvp_sp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
-        //gl::mat4 mvp_cy = p_cam.getProjectionMat() * p_cam.getViewMat() * cylinder.getModelMat();
+        gl::mat4 mvp_cy = p_cam.getProjectionMat() * p_cam.getViewMat() * cylinder.getModelMat();
 
-    
-        fb.clearColor();
-        fb.clearBuffer(buffer_type::depth, 1.0f, gl::vec4(gl::vec3(0.4,0.6,0.2),1.0));
-
-        //vertex displacement
-        { 
-            const auto [w, h] = sphere.getResolution();
-            //loop over vertices
+        {
+            const auto [w, h] = cylinder.getResolution();
             for (int i = 0; i <= w; i++)
             {
                 for (int j = 0; j <= h; j++)
-                {   
-                    //displace vertex
-                    auto pos = sphere.getVertex(i,j).position;
-                    sphere.setVertex(i,j).position += gl::vec3(sin(pos.x()*w),sin(pos.y()*w),sin(pos.z()*w));
+                {
+                    auto& vertex = cylinder.setVertex(i, j);
+                    vertex.baseColor.a() = 0.1f;
                 }
-            }    
+            }
         }
+    
+        fb.clearColor();
+        fb.clearBuffer(1.0f, gl::vec4(gl::vec3(0.4,0.6,0.2),1.0));
 
         // loop over micropolygons of sphere
         {   
@@ -186,6 +193,10 @@ int main()
 
 #endif
 
+    //////////////////////////////////////////
+    // Below are general test code for Bilinear Interpolation
+    //////////////////////////////////////////
+
 #ifdef TEST_BILINEAR
     {
         using namespace gl;
@@ -200,6 +211,11 @@ int main()
 
     }
 #endif
+
+
+    //////////////////////////////////////////
+    // Below are general test code for MSAA
+    //////////////////////////////////////////
 
 #ifdef TEST_SAMPLING
     {   
@@ -232,8 +248,7 @@ int main()
         gl::mat4 mvp_cy = p_cam.getProjectionMat() * p_cam.getViewMat() * cylinder.getModelMat();
 
         fb.clearColor();
-        fb.clearBuffer(buffer_type::depth);
-        fb.clearBuffer(buffer_type::color);
+        fb.clearBuffer();
 
         // loop over micropolygons
         for (int i = 0; i < w; i++)

@@ -16,7 +16,7 @@ public:
     };
     
     //specify arbitary number of vertices, no dicing needed
-    void resize_grid(uint u_segments, uint v_segments)
+    void resizeGrid(uint u_segments, uint v_segments)
     {
         this->U_SEGMENTS = u_segments;
         this->V_SEGMENTS = v_segments;
@@ -31,6 +31,9 @@ public:
         }
     };
 
+    void applyTexture(){
+
+    };
 
     // Dice happens before the mesh actually initialize the grid
     virtual void dice(uint x_span_pix,uint y_span_pix, float factor=2.0)=0;

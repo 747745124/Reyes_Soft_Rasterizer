@@ -33,7 +33,7 @@ public:
 
     Sphere(float radius, float zmin, float zmax, float thetamax, uint u_segments, uint v_segments) : Sphere(radius, zmin, zmax, thetamax)
     {   
-        resize_grid(u_segments,v_segments);
+        resizeGrid(u_segments,v_segments);
 
         for (int y = 0; y <= V_SEGMENTS; y++)
         {
@@ -55,7 +55,7 @@ public:
 
     void dice(uint x_span_pix,uint y_span_pix, float factor=2.f) override{
 
-        resize_grid((uint)(x_span_pix*factor),(uint)(y_span_pix*factor));
+        resizeGrid((uint)(x_span_pix*factor),(uint)(y_span_pix*factor));
 
         for (int y = 0; y <= V_SEGMENTS; y++)
         {
@@ -97,7 +97,7 @@ public:
 
     Cylinder(float radius, float zmin, float zmax, float thetamax, uint u_segments, uint v_segments) : Cylinder(radius, zmin, zmax, thetamax)
     {
-        resize_grid(u_segments,v_segments);
+        resizeGrid(u_segments,v_segments);
 
         for (int y = 0; y <= V_SEGMENTS; y++)
         {
@@ -122,7 +122,7 @@ public:
 
     void dice(uint x_span_pix,uint y_span_pix, float factor=2) override {
 
-        resize_grid((uint)(x_span_pix*factor),(uint)(y_span_pix*factor));
+        resizeGrid((uint)(x_span_pix*factor),(uint)(y_span_pix*factor));
 
         for (int y = 0; y <= V_SEGMENTS; y++)
         {
@@ -167,7 +167,7 @@ public:
 
     Cone(float height, float radius, float thetamax, uint u_segments, uint v_segments) : Cone(height, radius, thetamax)
     {
-        resize_grid(u_segments,v_segments);
+        resizeGrid(u_segments,v_segments);
 
         for (int y = 0; y <= V_SEGMENTS; y++)
         {
@@ -192,7 +192,7 @@ public:
 
     
     void dice(uint x_span_pix,uint y_span_pix, float factor=2) override {
-        resize_grid((uint)(x_span_pix*factor),(uint)(y_span_pix*factor));
+        resizeGrid((uint)(x_span_pix*factor),(uint)(y_span_pix*factor));
 
         for (int y = 0; y <= V_SEGMENTS; y++)
         {
@@ -241,7 +241,7 @@ public:
     Hyperboloid(gl::vec3 point1, gl::vec3 point2, float thetamax, uint u_segments, uint v_segments) :Hyperboloid(point1,point2,thetamax)
     {
 
-        resize_grid(u_segments,v_segments);
+        resizeGrid(u_segments,v_segments);
 
         for (int y = 0; y <= V_SEGMENTS; y++)
         {
@@ -264,7 +264,7 @@ public:
     };
 
     void dice(uint x_span_pix,uint y_span_pix, float factor=2) override {
-        resize_grid((uint)(x_span_pix*factor),(uint)(y_span_pix*factor));
+        resizeGrid((uint)(x_span_pix*factor),(uint)(y_span_pix*factor));
 
         for (int y = 0; y <= V_SEGMENTS; y++)
         {
@@ -309,7 +309,7 @@ public:
 
     Paraboloid(float rmax, float zmin, float zmax, float thetamax, uint u_segments, uint v_segments) : Paraboloid(rmax, zmin, zmax, thetamax)
     {
-        resize_grid(u_segments,v_segments);
+        resizeGrid(u_segments,v_segments);
 
         for (int y = 0; y <= V_SEGMENTS; y++)
         {
@@ -331,7 +331,7 @@ public:
 
     void dice(uint x_span_pix,uint y_span_pix, float factor=2) override {
 
-        resize_grid((uint)(x_span_pix*factor),(uint)(y_span_pix*factor));
+        resizeGrid((uint)(x_span_pix*factor),(uint)(y_span_pix*factor));
 
         for (int y = 0; y <= V_SEGMENTS; y++)
         {
@@ -372,7 +372,7 @@ public:
 
     Disk(float height, float radius, float thetamax, uint u_segments, uint v_segments) : Disk(height, radius, thetamax)
     {   
-        resize_grid(u_segments,v_segments);
+        resizeGrid(u_segments,v_segments);
 
         for (int y = 0; y <= V_SEGMENTS; y++)
         {
@@ -394,7 +394,7 @@ public:
 
     void dice(uint x_span_pix,uint y_span_pix, float factor=2) override {
 
-        resize_grid((uint)(x_span_pix*factor),(uint)(y_span_pix*factor));
+        resizeGrid((uint)(x_span_pix*factor),(uint)(y_span_pix*factor));
 
         for (int y = 0; y <= V_SEGMENTS; y++)
         {
@@ -438,7 +438,7 @@ public:
 
     Torus(float major_radius, float minor_radius, float phi_min, float phi_max, float theta_max, uint u_segments, uint v_segments) : Torus(major_radius, minor_radius, phi_min, phi_max, theta_max)
     {
-        resize_grid(u_segments,v_segments);
+        resizeGrid(u_segments,v_segments);
         for (int y = 0; y <= V_SEGMENTS; y++)
         {
             for (int x = 0; x <= U_SEGMENTS; x++)
@@ -461,7 +461,7 @@ public:
 
     void dice(uint x_span_pix,uint y_span_pix, float factor=2) override {
 
-        resize_grid((uint)(x_span_pix*factor),(uint)(y_span_pix*factor));
+        resizeGrid((uint)(x_span_pix*factor),(uint)(y_span_pix*factor));
 
         for (int y = 0; y <= V_SEGMENTS; y++)
         {

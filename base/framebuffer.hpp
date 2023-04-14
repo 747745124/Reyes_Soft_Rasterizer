@@ -90,7 +90,7 @@ public:
     }
 
     //reset all samples in the buffer to 0.0
-    void clearBuffer(buffer_type b_type,float bg_depth = 1.0f,gl::vec4 bg_color = gl::vec4(gl::vec3(0.0),1.0));
+    void clearBuffer(float bg_depth,gl::vec4 bg_color);
 
     // the input should be 2 integers
     gl::vec3 getPixelColor(uint u, uint v) const

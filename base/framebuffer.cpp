@@ -86,30 +86,16 @@ void FrameBuffer::setSampleNumber(uint m, uint n)
     initBuffers();
 };
 
-void FrameBuffer::clearBuffer(buffer_type b_type, float bg_depth, gl::vec4 bg_color)
+void FrameBuffer::clearBuffer(float bg_depth=1.0, gl::vec4 bg_color=gl::vec4(0.0,0.0,0.0,1.0))
 {
-    if(b_type == buffer_type::color){
-        for (uint i = 0; i < width; i++)
+    for (uint i = 0; i < width; i++)
+    {
+        for (uint j = 0; j < height; j++)
         {
-            for (uint j = 0; j < height; j++)
-            {
-                for (uint k = 0; k < this->getSampleNumber(); k++)
-                {   
-                    this->_buffers[i][j][k].clear();
-                    this->_buffers[i][j][k].push_back(Sample(1.0, bg_color));
-                }
-            }
-        }
-    }else if (b_type == buffer_type::depth){
-        for (uint i = 0; i < width; i++)
-        {
-            for (uint j = 0; j < height; j++)
-            {
-                for (uint k = 0; k < this->getSampleNumber(); k++)
-                {
-                    this->_buffers[i][j][k].clear();
-                    this->_buffers[i][j][k].push_back(Sample(Sample(1.0, bg_color)));
-                }
+            for (uint k = 0; k < this->getSampleNumber(); k++)
+            {   
+                this->_buffers[i][j][k].clear();
+                this->_buffers[i][j][k].push_back(Sample(1.0, bg_color));
             }
         }
     }
