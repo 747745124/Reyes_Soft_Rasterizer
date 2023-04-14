@@ -90,7 +90,7 @@ public:
     }
 
     //reset all samples in the buffer to 0.0
-    void clearBuffer(buffer_type b_type);
+    void clearBuffer(buffer_type b_type,float bg_depth = 1.0f,gl::vec4 bg_color = gl::vec4(gl::vec3(0.0),1.0));
 
     // the input should be 2 integers
     gl::vec3 getPixelColor(uint u, uint v) const
@@ -99,7 +99,7 @@ public:
     };
     
     // suppose color is vec3 and range 0~1
-    cv::Mat to_cv_mat();
+    cv::Mat to_cv_mat(int FORMAT=CV_8UC3);
 
 private:
     // 1st 2nd index for pixel, 3rd index for vector of samples

@@ -42,13 +42,21 @@ void FrameBuffer::setPixelColorFromBuffer(){
             for (uint k = 0; k < this->getSampleNumber(); k++)
             {   
 
-                sort(this->_buffers[i][j][k].begin(), this->_buffers[i][j][k].end(), [](Sample a, Sample b) {
-                    return a.depth < b.depth;
+                sort(this->_buffers[i][j][k].begin(), this->_buffers[i][j][k].end(), [](Sample& a, Sample& b) {
+                    return a.depth > b.depth;
                 });
+                
+                gl::vec3 sample_color = gl::vec3(0.0);
+                //sorted from far to near
+                 for(auto&sample:this->_buffers[i][j][k]){
 
-                gl::vec4 sample_color = this->_buffers[i][j][k][0].color;
-
-                //alpha blending
+                    if (sample.color.a()==1.0)
+                        sample_color = sample.color.rgb();
+                        
+                    //alpha blending
+                    sample_color = sample_color * (1.0 - sample.color.a()) + sample.color.rgb() * sample.color.a();
+                }
+        
                 this->_pixel_color[i][j] += sample_color.rgb();
             }
 
@@ -78,7 +86,7 @@ void FrameBuffer::setSampleNumber(uint m, uint n)
     initBuffers();
 };
 
-void FrameBuffer::clearBuffer(buffer_type b_type)
+void FrameBuffer::clearBuffer(buffer_type b_type, float bg_depth, gl::vec4 bg_color)
 {
     if(b_type == buffer_type::color){
         for (uint i = 0; i < width; i++)
@@ -88,7 +96,7 @@ void FrameBuffer::clearBuffer(buffer_type b_type)
                 for (uint k = 0; k < this->getSampleNumber(); k++)
                 {   
                     this->_buffers[i][j][k].clear();
-                    this->_buffers[i][j][k].push_back(Sample());
+                    this->_buffers[i][j][k].push_back(Sample(1.0, bg_color));
                 }
             }
         }
@@ -100,13 +108,14 @@ void FrameBuffer::clearBuffer(buffer_type b_type)
                 for (uint k = 0; k < this->getSampleNumber(); k++)
                 {
                     this->_buffers[i][j][k].clear();
-                    this->_buffers[i][j][k].push_back(Sample());
+                    this->_buffers[i][j][k].push_back(Sample(Sample(1.0, bg_color)));
                 }
             }
         }
     }
 };
 
+//this is the place where the shading happens
 void FrameBuffer::updateBufferByMicropolygon(Micropolygon &mp,gl::mat4 mvp){
     auto bbox = mp.getProjectedBoundingBox(mvp, this->width, this->height);
     auto projected_mp_pos = mp.getProjectedRectPos(mvp, this->width, this->height);
@@ -132,36 +141,38 @@ void FrameBuffer::updateBufferByMicropolygon(Micropolygon &mp,gl::mat4 mvp){
                     continue;
                 
                 float sample_depth = 0.25*(projected_mp_pos[0].z()+projected_mp_pos[1].z()+projected_mp_pos[2].z()+projected_mp_pos[3].z());
+
                 if(isfinite(sample_depth)&&sample_depth<=1.0&&sample_depth>=0.0){
-                    //if sample point if further than zbuffer, skip
-                    // if(sample_depth>=_buffers[i][j][k].depth)
-                    //     continue;
-
-                    _buffers[i][j][k].push_back(Sample(sample_depth,gl::vec4(mp.v0.position,1.0f)));
-
-                    //suceessfully sample a point,update the buffer
-                    // _buffers[i][j][k].depth = sample_depth;
-                    // _buffers[i][j][k].color = gl::vec4(mp.v0.position,1.0f);
+                    _buffers[i][j][k].push_back(Sample(sample_depth,mp.v0.baseColor));
                 }
             }
+
         }
     }
 
     return;
 };
 
-cv::Mat FrameBuffer::to_cv_mat()
+cv::Mat FrameBuffer::to_cv_mat(int FORMAT)
 {
     cv::Mat image(getWidth(), getHeight(), CV_32FC3, cv::Scalar(0.0f, 0.0f, 0.0f));
-    image.convertTo(image, CV_8UC3, 1.0f);
+
     for (uint i = 0; i < getWidth(); i++)
     {
         for (uint j = 0; j < getHeight(); j++)
         {
             auto color = getPixelColor(i, j);
-            image.at<cv::Vec3b>(i, j) = cv::Vec3b(color.x() * 255, color.y() * 255, color.z() * 255);
+            image.at<cv::Vec3f>(i, j) = cv::Vec3f(color.x(), color.y(), color.z());
         }
     }
+
+    if (FORMAT == CV_8UC3)
+        image.convertTo(image, FORMAT, 255.0);
+    else if (FORMAT == CV_32FC3)
+        image.convertTo(image, FORMAT);
+    else
+        std::cout << "Unsupported format" << std::endl;
+
     cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
     return image;
 }
