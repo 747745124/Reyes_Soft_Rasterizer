@@ -9,4 +9,5 @@
 #include "./base/framebuffer.hpp"
 #include "./base/mesh.hpp"
 #include "./base/primitive.hpp"
+#include "./base/texture.hpp"
 #include <opencv2/opencv.hpp>

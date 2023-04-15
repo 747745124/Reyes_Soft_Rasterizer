@@ -5,7 +5,7 @@
 class Mesh : public Object3D
 {
 public:
-    //need furthur dicing
+    //Dicing method must be called before drawing
     Mesh() : Object3D()
     {
         _grids.resize(U_SEGMENTS + 1);
@@ -85,6 +85,12 @@ public:
     {   
         assert(u <= U_SEGMENTS && v <= V_SEGMENTS);
         return _grids[u][v];
+    };
+
+    void setVertexColor(uint u, uint v, const gl::vec4& color)
+    {
+        assert(u <= U_SEGMENTS && v <= V_SEGMENTS);
+        _grids[u][v].baseColor = color;
     };
 
     int getVertexCount() const
