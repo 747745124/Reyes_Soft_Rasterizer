@@ -1,5 +1,5 @@
 #include "./texture.hpp"
-
+//probably TODO: mipmap & tri-linear interpolation
 Texture2D::Texture2D(const std::string path, int FORMAT = CV_32FC3) : _path(path)
 {
     // read image from given path

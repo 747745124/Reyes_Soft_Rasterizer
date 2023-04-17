@@ -6,6 +6,17 @@
 
 namespace gl
 {
+    static float step(float edge, float x)
+    {
+        return x < edge ? 0.0f : 1.0f;
+    }
+
+    //convolve kernel
+    static float filtered_step(float edge, float x, float w)
+    {
+        return std::clamp((x - edge + w / 2.0f) / w, 0.0f, 1.0f);
+    }
+
     static float sign(gl::vec2 p1, gl::vec2 p2, gl::vec2 p3)
     {
         return (p1.x() - p3.x()) * (p2.y() - p3.y()) - (p2.x() - p3.x()) * (p1.y() - p3.y());
@@ -148,10 +159,10 @@ namespace gl
             u = (h.x() - f.x() * v) / (e.x() + g.x() * v);
         }
 
-        //degrade to nearest
+        // degrade to nearest
         if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
         {
-            return res = vec2(0.f,0.f);
+            return res = vec2(0.f, 0.f);
         }
 
         return res = vec2(u, v);
