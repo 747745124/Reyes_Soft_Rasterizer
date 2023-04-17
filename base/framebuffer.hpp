@@ -4,6 +4,7 @@
 #include "../utils/transformations.hpp"
 #include "../utils/utility.hpp"
 #include "./vertex.hpp"
+#include "./texture.hpp"
 #include <opencv2/opencv.hpp>
 
 // data needed per sample
@@ -42,6 +43,7 @@ enum class buffer_type
     depth
 };
 
+//Default FrameBuffer
 class FrameBuffer
 {
 public:
@@ -53,9 +55,12 @@ public:
     void setSampleNumber(uint m, uint n);
     // initialize all sample buffers
     void initBuffers();
-
+    //  set samples buffer,to ensure the same sample across all different framebuffers
+    void setSampleOffset(std::vector<gl::vec2> & offsets){
+        this->sample_offset = offsets;
+    };
     // given a micropolygon, test it with the framebuffer, update buffers accordingly
-    void updateBufferByMicropolygon(Micropolygon &mp, gl::mat4 mvp);
+    void updateBufferByMicropolygon(Micropolygon &mp, gl::mat4 mvp,LERP_MODE mode = LERP_MODE::CORNER);
 
     uint getSampleNumber() const
     {

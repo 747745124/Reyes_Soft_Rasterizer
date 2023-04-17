@@ -6,7 +6,8 @@
 enum class LERP_MODE
 {
 	NEAREST,
-	BILINEAR
+	BILINEAR,
+	CORNER
 };
 
 class Texture2D

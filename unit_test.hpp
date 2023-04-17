@@ -10,4 +10,5 @@
 #include "./base/mesh.hpp"
 #include "./base/primitive.hpp"
 #include "./base/texture.hpp"
+#include "./base/shader.hpp"
 #include <opencv2/opencv.hpp>

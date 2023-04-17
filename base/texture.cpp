@@ -54,16 +54,55 @@ gl::vec3 Texture2D::getTexelColor(float u, float v,LERP_MODE mode)
 {   
     uint x = 0;
     uint y = 0;
+
     if(mode==LERP_MODE::NEAREST)
     {
         // get the texel coordinate
         x = (uint)(u * _width);
         y = (uint)(v * _height);
+        // clamp the texel coordinate
+        x = std::clamp(x, 0u, _width - 1);
+        y = std::clamp(y, 0u, _height - 1);
+
+        return texels[x][y];
+    }
+    else if(mode==LERP_MODE::BILINEAR)
+    {   
+        // get the texel coordinate
+        x = (uint)(u * _width);
+        y = (uint)(v * _height);
+
+        // get the texel coordinate
+        float x1 = (u * _width) - x;
+        float y1 = (v * _height) - y;
+
+        x = std::clamp(x, 0u, _width - 2);
+        y = std::clamp(y, 0u, _height - 2);
+
+
+        // get the texel coordinate
+        float x2 = 1.0 - x1;
+        float y2 = 1.0 - y1;
+
+        // get the texel coordinate
+        gl::vec3 c1 = texels[x][y];
+        gl::vec3 c2 = texels[x+1][y];
+        gl::vec3 c3 = texels[x][y+1];
+        gl::vec3 c4 = texels[x+1][y+1];
+
+        // get the texel coordinate
+        gl::vec3 c12 = c1*x2 + c2*x1;
+        gl::vec3 c34 = c3*x2 + c4*x1;
+
+        // get the texel coordinate
+        gl::vec3 c1234 = c12*y2 + c34*y1;
+
+        return c1234;
+    }
+    else
+    {
+        throw std::runtime_error("Unsupported lerp mode");
     }
 
-    // clamp the texel coordinate
-    x = std::clamp(x, 0u, _width - 1);
-    y = std::clamp(y, 0u, _height - 1);
-
-    return texels[x][y];
+    return gl::vec3(0.0f);
 };

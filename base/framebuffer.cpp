@@ -56,7 +56,7 @@ void FrameBuffer::setPixelColorFromBuffer()
                         sample_color = sample.color.rgb();
 
                     // alpha blending
-                    sample_color = sample_color * (1.0 - sample.color.a()) + sample.color.rgb() * sample.color.a();
+                    sample_color = sample_color * (1.0f - sample.color.a()) + sample.color.rgb() * sample.color.a();
                 }
 
                 this->_pixel_color[i][j] += sample_color.rgb();
@@ -103,10 +103,10 @@ void FrameBuffer::clearBuffer(float bg_depth = 1.0, gl::vec4 bg_color = gl::vec4
 };
 
 // this is the place where the shading happens
-void FrameBuffer::updateBufferByMicropolygon(Micropolygon &mp, gl::mat4 mvp)
+void FrameBuffer::updateBufferByMicropolygon(Micropolygon &mp, gl::mat4 mvp, LERP_MODE mode)
 {
     auto bbox = mp.getProjectedBoundingBox(mvp, this->width, this->height);
-    auto projected_mp_pos = mp.getProjectedRectPos(mvp, this->width, this->height);
+    auto proj_mp_pos = mp.getProjectedRectPos(mvp, this->width, this->height);
 
     // for each pixel touched by the bounding box
     for (uint i = (uint)bbox[0]; i < (uint)(ceil(bbox[1])); i++)
@@ -125,15 +125,31 @@ void FrameBuffer::updateBufferByMicropolygon(Micropolygon &mp, gl::mat4 mvp)
                 // get the sample point
                 gl::vec2 sample_point = {i + offset.x(), j + offset.y()};
                 // test if the sample point is inside the micropolygon
-                bool is_inside = gl::is_inside_rect(sample_point, projected_mp_pos[0].xy(), projected_mp_pos[1].xy(), projected_mp_pos[2].xy(), projected_mp_pos[3].xy());
+                bool is_inside = gl::is_inside_rect(sample_point, proj_mp_pos[0].xy(), proj_mp_pos[1].xy(), proj_mp_pos[2].xy(), proj_mp_pos[3].xy());
                 if (!is_inside)
                     continue;
 
-                float sample_depth = 0.25 * (projected_mp_pos[0].z() + projected_mp_pos[1].z() + projected_mp_pos[2].z() + projected_mp_pos[3].z());
+                // it's on a plane, so we can use the plane equation to get the depth
+                Plane p(proj_mp_pos[0].xyz(), proj_mp_pos[1].xyz(), proj_mp_pos[2].xyz());
+                // get the depth of the sample point
+                float sample_depth = p.get_z(sample_point.x(), sample_point.y());
 
                 if (isfinite(sample_depth) && sample_depth <= 1.0 && sample_depth >= 0.0)
                 {
-                    _buffers[i][j][k].push_back(Sample(sample_depth, mp.v0.baseColor));
+                    if (LERP_MODE::CORNER == mode)
+                        //push the cornor color to the buffer
+                        _buffers[i][j][k].push_back(Sample(sample_depth, mp.v0.baseColor));
+                    else if (LERP_MODE::BILINEAR == mode)
+                    {
+                        auto uv = gl::inverseBilinear(sample_point, proj_mp_pos[0].xy(), proj_mp_pos[1].xy(), proj_mp_pos[2].xy(), proj_mp_pos[3].xy());
+                        auto color = gl::bilinear(uv, mp.v0.baseColor, mp.v1.baseColor, mp.v2.baseColor, mp.v3.baseColor);
+                        _buffers[i][j][k].push_back(Sample(sample_depth, color));
+                    }
+                    else
+                    {
+                        throw std::runtime_error("Invalid LERP_MODE");
+                        return;
+                    }
                 }
             }
         }

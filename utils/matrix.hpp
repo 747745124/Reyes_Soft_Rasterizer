@@ -64,6 +64,17 @@ namespace gl
             return data[3];
         }
 
+        float &u()
+        {
+            return data[0];
+        }
+
+        float &v()
+        {
+            assert(data.size() >= 2);
+            return data[1];
+        }
+
         //below accessor are pass by value
         vec<2, T> xy()
         {
@@ -241,6 +252,7 @@ namespace gl
             return *this;
         }
 
+
     private:
         std::array<T, N> data;
     };
@@ -335,6 +347,19 @@ namespace gl
         return result;
     }
 
+        //color multiplication
+    template <int N, class T>
+    vec<N, T> operator*(const vec<N, T> &lhs, const vec<N, T>&rhs)
+    {   
+        vec<N, T> result;
+        for (int i = 0; i < N; i++)
+        {
+            result[i] = lhs[i] * rhs[i];
+        }
+
+        return result; 
+    }
+    
     template <int N, class T>
     vec<N, T> operator*(const float multiplier, const vec<N, T> &rhs)
     {

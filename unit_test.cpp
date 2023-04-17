@@ -1,6 +1,8 @@
 #include "./unit_test.hpp"
-#define TEST_TEXTURE
-// #define TEST_SHADER
+#define TEST_DISPLACEMENT
+// #define TEST_TEXTURE
+// #define TEST_PLANE
+// #define TEST_PHONG
 // #define TEST_DICING
 // #define TEST_ALPHA
 // #define TEST_BILINEAR
@@ -12,8 +14,135 @@
 
 int main()
 {
-#ifdef TEST_SHADER
+#ifdef TEST_DISPLACEMENT
+        Texture2D tex("../assets/textures/aki.jpeg", CV_32FC3);
+        uint width = 400;
+        uint height = 400;
 
+        PerspectiveCamera p_cam(gl::to_radian(45.0f), (float)width / (float)height, 0.1f, 100.0f);
+
+        // MSAA 4x
+        FrameBuffer fb(width, height, 2, 2);
+        Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f));
+
+        sphere.scale = gl::vec3(0.9f);
+        sphere.position = gl::vec3(0.0f, 0.0f, 6.0f);
+        gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(135.0f));
+        sphere.rotation = q * sphere.rotation;
+
+        gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
+        auto span = sphere.getProjectedBoundingVolumeSpan(mvp, width, height);
+        sphere.dice((uint)span.x(), (uint)span.y(), 2.0f);
+        
+
+        gl::checkerBoard(sphere,60);
+        {
+            PhongMaterial mat;
+            mat.ka = 0.15f;
+            mat.kd = gl::vec3(0.2f);
+            mat.ks = gl::vec3(0.5f);
+            mat.shininess = 32.0f;
+
+            Light light;
+            light.position = gl::vec3(0.0f, 0.0f, 10.0f);
+            light.color = gl::vec3(1.0f);
+            gl::simpleTextureMapping(sphere, tex);
+            gl::BlinnPhong(sphere, std::vector<Light>{light}, mat,p_cam.position);
+        }
+        
+
+        fb.clearColor();
+        // fb.clearBuffer(1.0f, gl::vec4(gl::vec3(0.4, 0.6, 0.2), 1.0));
+
+        // loop over micropolygons of sphere
+        const auto [w, h] = sphere.getResolution();
+        for (int i = 0; i < w; i++)
+        {
+            for (int j = 0; j < h; j++)
+            {
+                auto mp = sphere.getMicropolygon(i, j);
+                fb.updateBufferByMicropolygon(mp, mvp);
+            }
+        }
+
+        fb.setPixelColorFromBuffer();
+        auto img = fb.to_cv_mat();
+        cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
+        cv::imshow("image", img);
+        cv::waitKey();
+#endif
+
+#ifdef TEST_PHONG
+        Texture2D tex("../assets/textures/aki.jpeg", CV_32FC3);
+        uint width = 400;
+        uint height = 400;
+
+        PerspectiveCamera p_cam(gl::to_radian(45.0f), (float)width / (float)height, 0.1f, 100.0f);
+
+        // MSAA 4x
+        FrameBuffer fb(width, height, 2, 2);
+        Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f));
+
+        sphere.scale = gl::vec3(0.9f);
+        sphere.position = gl::vec3(0.0f, 0.0f, 6.0f);
+        gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(135.0f));
+        sphere.rotation = q * sphere.rotation;
+
+        gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
+        auto span = sphere.getProjectedBoundingVolumeSpan(mvp, width, height);
+        sphere.dice((uint)span.x(), (uint)span.y(), 2.0f);
+        
+
+
+        gl::checkerBoard(sphere,60);
+        // gl::setOpacity(sphere, 0.1f);
+        {
+            PhongMaterial mat;
+            mat.ka = 0.15f;
+            mat.kd = gl::vec3(0.2f);
+            mat.ks = gl::vec3(0.5f);
+            mat.shininess = 32.0f;
+
+            Light light;
+            light.position = gl::vec3(0.0f, 0.0f, 10.0f);
+            light.color = gl::vec3(1.0f);
+            gl::simpleTextureMapping(sphere, tex);
+            gl::BlinnPhong(sphere, std::vector<Light>{light}, mat,p_cam.position);
+        }
+        // gl::simpleTextureMapping(sphere, tex);
+
+        fb.clearColor();
+        // fb.clearBuffer(1.0f, gl::vec4(gl::vec3(0.4, 0.6, 0.2), 1.0));
+
+        // loop over micropolygons of sphere
+        const auto [w, h] = sphere.getResolution();
+        for (int i = 0; i < w; i++)
+        {
+            for (int j = 0; j < h; j++)
+            {
+                auto mp = sphere.getMicropolygon(i, j);
+                fb.updateBufferByMicropolygon(mp, mvp);
+            }
+        }
+
+        fb.setPixelColorFromBuffer();
+        auto img = fb.to_cv_mat();
+        cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
+        cv::imshow("image", img);
+        cv::waitKey();
+
+#endif
+
+#ifdef TEST_PLANE
+    {
+        using namespace gl;
+        vec3 p1(1.0f, 1.0f, 1.0f);
+        vec3 p2(0.0f, 0.0f, 0.0f);
+        vec3 p3(0.0f, 1.0f, 0.0f);
+
+        Plane plane(p1, p2, p3);
+        // std::cout << plane.get_x(0.0,0.5) << std::endl;
+    }
 #endif
 
 #ifdef TEST_TEXTURE
@@ -25,34 +154,32 @@ int main()
         PerspectiveCamera p_cam(gl::to_radian(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 
         // MSAA 4x
-        FrameBuffer fb(width, height, 1, 1);
+        FrameBuffer fb(width, height, 2, 2);
         Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f));
 
         sphere.scale = gl::vec3(0.9f);
         sphere.position = gl::vec3(0.0f, 0.0f, 6.0f);
-        gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(1.0f, .0f, 0.0f), gl::to_radian(90.0f));
-        gl::Quat q2 = gl::Quat::fromAxisAngle(gl::vec3(0.0f,0.0f,1.0f), gl::to_radian(90.0f));
-        gl::Quat q3 = gl::Quat::fromAxisAngle(gl::vec3(1.0f, 0.0f, 0.0f), gl::to_radian(180.0f));
-        sphere.rotation = q3*q2*q*sphere.rotation;
-
-        // std::cout<<sphere.rotation.to_mat4()<<std::endl;
-        // return 0;
+        gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
+        // gl::Quat q2 = gl::Quat::fromAxisAngle(gl::vec3(0.0f,0.0f,1.0f), gl::to_radian(90.0f));
+        // gl::Quat q3 = gl::Quat::fromAxisAngle(gl::vec3(1.0f, 0.0f, 0.0f), gl::to_radian(180.0f));
+        // sphere.rotation = q * sphere.rotation;
 
         gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
         auto span = sphere.getProjectedBoundingVolumeSpan(mvp, width, height);
-        sphere.dice((uint)span.x(), (uint)span.y(), 1.f);
+        sphere.dice((uint)span.x(), (uint)span.y(), 2.0f);
 
-        {
-            const auto [w, h] = sphere.getResolution();
-            for (int i = 0; i <= w; i++)
-            {
-                for (int j = 0; j <= h; j++)
-                {
-                    auto color = tex.getTexelColor(i / (float)w, j / (float)h, LERP_MODE::NEAREST);
-                    sphere.setVertexColor(i, j, gl::vec4(color, 1.0f));
-                }
-            }
-        }
+        // apply texture
+         {
+             const auto [w, h] = sphere.getResolution();
+             for (int i = 0; i <= w; i++)
+             {
+                 for (int j = 0; j <= h; j++)
+                 {
+                     auto color = tex.getTexelColor(i / (float)w, j / (float)h, LERP_MODE::BILINEAR);
+                     sphere.setVertexColor(i, j, gl::vec4(color, 1.0f));
+                 }
+             }
+         }
 
         fb.clearColor();
         fb.clearBuffer(1.0f, gl::vec4(gl::vec3(0.4, 0.6, 0.2), 1.0));
@@ -67,7 +194,6 @@ int main()
                 fb.updateBufferByMicropolygon(mp, mvp);
             }
         }
-        
 
         fb.setPixelColorFromBuffer();
         auto img = fb.to_cv_mat();
@@ -254,14 +380,29 @@ int main()
 #ifdef TEST_BILINEAR
     {
         using namespace gl;
-        vec3 x2y2(1.0f, 1.0f, 1.0f);
-        vec3 x2y1(1.0f, 0.0f, 0.0f);
-        vec3 x1y2(0.0f, 1.0f, 0.0f);
-        vec3 x1y1(0.0f, 0.0f, 1.0f);
+        {
+            vec3 x2y2(1.0f, 1.0f, 1.0f);
+            vec3 x2y1(1.0f, 0.0f, 0.0f);
+            vec3 x1y2(0.0f, 1.0f, 0.0f);
+            vec3 x1y1(0.0f, 0.0f, 1.0f);
 
-        vec2 screen_coord(0.5, 0.5);
+            vec2 screen_coord(0.5, 0.5);
 
-        std::cout << get_depth_bilinear(screen_coord, x1y1, x2y1, x2y2, x1y2) << std::endl;
+            std::cout << inverseBilinear(screen_coord, x1y1.xy(), x2y1.xy(), x2y2.xy(), x1y2.xy()) << std::endl;
+            std::cout << get_depth_bilinear(screen_coord, x1y1, x2y1, x2y2, x1y2) << std::endl;
+        }
+
+        {
+            vec2 p1(0, 3);
+            vec2 p2(3, 4);
+            vec2 p3(3, 0);
+            vec2 p4(0, 1);
+
+            vec2 screen_coord(1, 2);
+            auto uv = inverseBilinear(screen_coord,p1,p2,p3,p4);
+            std::cout<<uv<<std::endl;
+            std::cout<<bilinear(uv,p1,p2,p3,p4)<<std::endl;
+        }
     }
 #endif
 
