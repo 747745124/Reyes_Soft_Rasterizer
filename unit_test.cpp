@@ -1,8 +1,8 @@
 #include "./unit_test.hpp"
-// #define TEST_DISPLACEMENT
+#define TEST_DISPLACEMENT
 // #define TEST_TEXTURE
 // #define TEST_PLANE
-#define TEST_PHONG
+// #define TEST_PHONG
 // #define TEST_DICING
 // #define TEST_ALPHA
 // #define TEST_BILINEAR
@@ -22,7 +22,7 @@ int main()
     PerspectiveCamera p_cam(gl::to_radian(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 
     // MSAA 4x
-    FrameBuffer fb(width, height, 4, 4);
+    FrameBuffer fb(width, height, 2, 2);
     Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f));
 
     sphere.scale = gl::vec3(0.9f);
@@ -47,8 +47,8 @@ int main()
         light2.position = gl::vec3(1.0f, 1.0f, 5.0f);
         light2.color = gl::vec3(1.0f, 1.0f, 1.0f);
 
-        gl::simpleTextureMapping(sphere, tex, LERP_MODE::NEAREST);
-        gl::checkerBoard(sphere, 30.f);
+        // gl::simpleTextureMapping(sphere, tex, LERP_MODE::NEAREST);
+        gl::checkerBoard(sphere, 10.f);
         gl::Displacement(sphere, 1.0f);
         gl::BlinnPhong(sphere, std::vector<Light>{light1, light2}, mat, p_cam.position);
     }

@@ -79,4 +79,29 @@ struct PBRMaterial
         float ggx2 = GeometrySchlickGGX(NdotV);
         return ggx1 * ggx2;
     }
+
+    gl::vec3 ImportanceSamplingGGX(gl::vec2 Xi, gl::vec3 N, float roughness)
+    {
+        using namespace gl;
+        float a = roughness * roughness;
+        float phi = 2.0f * M_PI * Xi.x();
+        float cos_theta = sqrt((1.0f - Xi.y()) / (1.0f + (a * a - 1.0f) * Xi.y()));
+        float sin_theta = sqrt(1.0f - cos_theta * cos_theta);
+
+        // spherical coordinates to cartesian coordinates
+        vec3 H;
+        H.x() = cos(phi) * sin_theta;
+        H.y() = sin(phi) * sin_theta;
+        H.z() = cos_theta;
+
+        // tangent space to world space
+        vec3 up = fabs(N.z()) < 0.999f ? vec3(0.0f, 0.0f, 1.0f) : vec3(1.0f, 0.0f, 0.0f);
+        vec3 tangent = normalize(cross(up, N));
+        vec3 bitangent = cross(N, tangent);
+
+        vec3 sample_vec = tangent * H.x() + bitangent * H.y() + N * H.z();
+        return normalize(sample_vec);
+    };
+
+
 };
