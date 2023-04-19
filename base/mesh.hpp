@@ -115,6 +115,7 @@ public:
         return Micropolygon(_grids[u][v], _grids[u + 1][v], _grids[u + 1][v + 1], _grids[u][v + 1]);
     };
 
+
 protected:
     std::array<std::pair<float,float>,3> _bounding_volume;
     uint V_SEGMENTS = 3;

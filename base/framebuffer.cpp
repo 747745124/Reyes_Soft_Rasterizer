@@ -193,7 +193,7 @@ cv::Mat FrameBuffer::to_cv_mat(int FORMAT)
         for (uint j = 0; j < getHeight(); j++)
         {
             auto color = getPixelColor(i, j);
-            image.at<cv::Vec3f>(i, j) = cv::Vec3f(color.x(), color.y(), color.z());
+            image.at<cv::Vec3f>(j, i) = cv::Vec3f(color.x(), color.y(), color.z());
         }
     }
 

@@ -78,7 +78,7 @@ namespace gl
                 
                 auto vertex_pos = mesh.getModelMat() * vec4(vertex.position,1.0f);
                 auto normal = (mesh.getModelMat().inverse().transpose() * vec4(vertex.normal,0.0f)).xyz().normalize();
-                
+
                 auto view = (view_pos - vertex_pos.xyz()).normalize();
                 auto color = gl::vec3(0.0f);
 
@@ -112,6 +112,19 @@ namespace gl
             for (int j = 0; j <= h; j++)
             {
                 auto color = tex.getTexelColor(i / (float)w, j / (float)h, mode);
+                mesh.setVertexColor(i, j, gl::vec4(color, 1.0f));
+            }
+        }
+    }
+
+    //visualize local normal
+    static void visualizeNormal(Mesh &mesh){
+        const auto [w, h] = mesh.getResolution();
+        for (int i = 0; i <= w; i++)
+        {
+            for (int j = 0; j <= h; j++)
+            {
+                auto color = mesh.getVertex(i, j).normal;
                 mesh.setVertexColor(i, j, gl::vec4(color, 1.0f));
             }
         }

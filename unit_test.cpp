@@ -1,12 +1,12 @@
 #include "./unit_test.hpp"
-// #define TEST_SHADOW_MAP
+#define TEST_PRIMITIVE_NORMAL
 //  #define TEST_ZBUFFER_VIS
 //  #define TEST_PERLIN_DISPLACEMENT
 //  #define TEST_PERLIN
 //  #define TEST_FILTER_CHECKER
 //  #define TEST_TEXTURE
 //  #define TEST_PLANE
- #define TEST_PHONG
+//  #define TEST_PHONG
 //  #define TEST_DICING
 //  #define TEST_ALPHA
 //  #define TEST_BILINEAR
@@ -19,7 +19,7 @@
 int main()
 {
 
-#ifdef TEST_SHADOW_MAP
+#ifdef TEST_PRIMITIVE_NORMAL
     // linearize depth visualize
     uint width = 800;
     uint height = 800;
@@ -27,43 +27,53 @@ int main()
     PerspectiveCamera p_cam(gl::to_radian(45.0f), (float)width / (float)height, 0.1f, 50.0f);
 
     FrameBuffer fb(width, height, 1, 1);
+    Hyperboloid hyper({-1, -1, -1}, {1, 1, 1}, gl::to_radian(360.f));
     Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f));
 
-    sphere.scale = gl::vec3(2.f);
-    sphere.position = gl::vec3(0.0f, 0.0f, 15.0f);
-    gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
-    sphere.rotation = q * sphere.rotation;
-
-    gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
-    auto span = sphere.getProjectedBoundingVolumeSpan(mvp, width, height);
-    sphere.dice((uint)span.x(), (uint)span.y(), 2.0f);
-
     {
-        PhongMaterial mat;
-        mat.ka = 0.3f;
-        mat.kd = gl::vec3(0.5f);
-        mat.ks = gl::vec3(1.f);
-        mat.shininess = 32.0f;
+        hyper.scale = gl::vec3(1.f);
+        hyper.position = gl::vec3(1.0f, 0.0f, 8.0f);
+        gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
+        hyper.rotation = q * hyper.rotation;
+    }
 
-        Light light;
-        light.position = gl::vec3(1.f, 1.0f, 12.0f);
-        light.color = gl::vec3(1.0f);
-        light.intensity = 2.0f;
 
-        gl::BlinnPhong(sphere,std::vector<Light>{light}, mat, p_cam.position);
+    gl::mat4 mvp_hp = p_cam.getProjectionMat() * p_cam.getViewMat() * hyper.getModelMat();
+    {
+        auto span = hyper.getProjectedBoundingVolumeSpan(mvp_hp, width, height);
+        hyper.dice((uint)span.x(), (uint)span.y(), 1.0f);
+        gl::visualizeNormal(hyper);
     }
 
     fb.clearColor();
     fb.clearBuffer(1.0f, gl::vec4(gl::vec3(0.0f), 1.0f));
 
-    // loop over micropolygons of sphere
-    const auto [w, h] = sphere.getResolution();
-    for (int i = 0; i < w; i++)
     {
-        for (int j = 0; j < h; j++)
+        PhongMaterial mat;
+        mat.ka = 0.2f;
+        mat.kd = gl::vec3(0.5f);
+        mat.ks = gl::vec3(0.5f);
+        mat.shininess = 32.0f;
+
+        Light light1, light2;
+        light1.position = gl::vec3(2.f, 0.f, 4.0f);
+        light1.color = gl::vec3(1.0f);
+        light2.position = gl::vec3(0.f, 0.f, 2.0f);
+        light2.color = gl::vec3(1.0f, 1.0f, 1.0f);
+
+        gl::BlinnPhong(hyper, std::vector<Light>{light1, light2}, mat, p_cam.position);
+    }
+
+    {
+        // loop over micropolygons of primitive
+        const auto [w, h] = hyper.getResolution();
+        for (int i = 0; i < w; i++)
         {
-            auto mp = sphere.getMicropolygon(i, j);
-            fb.updateBufferByMicropolygon(mp, mvp, LERP_MODE::CORNER);
+            for (int j = 0; j < h; j++)
+            {
+                auto mp = hyper.getMicropolygon(i, j);
+                fb.updateBufferByMicropolygon(mp, mvp_hp, LERP_MODE::CORNER);
+            }
         }
     }
 
@@ -153,7 +163,7 @@ int main()
 
         gl::displacementPerlin(sphere, 20, 0.1f);
         gl::setColor(sphere, gl::vec4(0.28, 0.38, 1.0f, 1.0f));
-        gl::BlinnPhong(sphere,std::vector<Light>{light1, light2, light3}, mat, p_cam.position);
+        gl::BlinnPhong(sphere, std::vector<Light>{light1, light2, light3}, mat, p_cam.position);
     }
 
     fb.clearColor();
@@ -317,8 +327,8 @@ int main()
         light4.intensity = 20.f;
 
         gl::simpleTextureMapping(sphere, tex);
-        gl::BlinnPhong(sphere,std::vector<Light>{light1}, mat, p_cam.position);
-        gl::clothShader(sphere,std::vector<Light>{light1, light2, light3, light4}, pbr_mat, p_cam.position);
+        gl::BlinnPhong(sphere, std::vector<Light>{light1}, mat, p_cam.position);
+        gl::clothShader(sphere, std::vector<Light>{light1, light2, light3, light4}, pbr_mat, p_cam.position);
     }
 
     fb.clearColor();
@@ -700,7 +710,7 @@ int main()
             //  std::cout << v.position << std::endl;
             for (auto &offset : sample_offset)
             {
-                image.at<cv::Vec3b>((int)(offset.x() * 100), (int)(offset.y() * 100)) = cv::Vec3b((int)(255), (int)(offset.y() * 255), 1.0f);
+                image.at<cv::Vec3b>((int)(offset.y() * 100), (int)(offset.x() * 100)) = cv::Vec3b((int)(255), (int)(offset.y() * 255), 1.0f);
             }
 
             // show the boundary of the grid
@@ -769,15 +779,15 @@ int main()
 
 #ifdef TEST_MVP
     {
-        Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f));
+        Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f), 100, 100);
         sphere.scale = gl::vec3(0.9f);
-        sphere.position = gl::vec3(0.0f, 0.0f, 4.0f);
+        sphere.position = gl::vec3(3.0f, 1.0f, 4.0f);
         gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(-90.0f));
         sphere.rotation = q * sphere.rotation;
         auto [w, h] = sphere.getResolution();
 
         PerspectiveCamera p_cam(gl::to_radian(45.0f), 1.0f, 0.1f, 100.0f);
-        gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat();
+        gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat()*sphere.getModelMat();
 
         uint width = 800;
         uint height = 800;
@@ -789,13 +799,14 @@ int main()
             image.convertTo(image, CV_8UC3, 1.0f);
 
             auto [w, h] = sphere.getResolution();
+            std::cout<<gl::getScreenCoord(sphere.position, mvp, width, height)<<std::endl;
             for (int i = 0; i < w; i++)
             {
                 for (int j = 0; j < h; j++)
                 {
                     auto v = sphere.getVertex(i, j);
                     auto v_screen = gl::getScreenCoord(v.position, mvp, width, height);
-                    image.at<cv::Vec3b>((int)v_screen.x(), (int)(v_screen.y())) = cv::Vec3b((int)(v.position.x() * 255), (int)(v.position.y() * 255), 255);
+                    image.at<cv::Vec3b>((int)v_screen.y(), (int)(v_screen.x())) = cv::Vec3b(1.0 * 255, 1.0 * 255, 255);
                 }
             }
 
@@ -806,9 +817,9 @@ int main()
     }
 #endif
 
-    //////////////////////////////////////////
-    // Below are general test code for vec and mat class
-    //////////////////////////////////////////
+//////////////////////////////////////////
+// Below are general test code for vec and mat class
+//////////////////////////////////////////
 #ifdef TEST_VEC
     {
         gl::vec2 v2(1.0f, 1.0f);

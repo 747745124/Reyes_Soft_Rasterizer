@@ -182,9 +182,9 @@ public:
                 float y_pos = (1 - v_seg) * radius * sinf(theta);
                 float z_pos = v_seg * height;
 
-                float x_norm = cosf(theta);
-                float y_norm = sinf(theta);
-                float z_norm = height / radius;
+                float z_norm = sinf(radius / height);
+                float x_norm = cosf(radius / height) * cosf(theta);
+                float y_norm = cosf(radius / height) * sinf(theta);
 
                 _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {x_norm, y_norm, z_norm}, {u_seg, v_seg}, {x_pos, y_pos, z_pos, 1.0f});
             }
@@ -207,9 +207,9 @@ public:
                 float y_pos = (1 - v_seg) * radius * sinf(theta);
                 float z_pos = v_seg * height;
 
-                float x_norm = cosf(theta);
-                float y_norm = sinf(theta);
-                float z_norm = height / radius;
+                float z_norm = sinf(radius / height);
+                float x_norm = cosf(radius / height) * cosf(theta);
+                float y_norm = cosf(radius / height) * sinf(theta);
 
                 _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {x_norm, y_norm, z_norm}, {u_seg, v_seg}, {x_pos, y_pos, z_pos, 1.0f});
             }
@@ -259,7 +259,11 @@ public:
                 float y_pos = x_r * sinf(theta) + y_r * cosf(theta);
                 float z_pos = z_r;
 
-                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {0, 0, 0}, {u_seg, v_seg});
+                gl::vec3 du(-x_r * thetamax * sinf(theta) - y_r * thetamax * cosf(theta), x_r * thetamax * cosf(theta) - y_r * thetamax * sinf(theta), 0);
+                gl::vec3 dv((point2.x() - point1.x()) * cosf(theta) - (point2.y() - point1.y()) * sinf(theta), (point2.x() - point1.x()) * sinf(theta) + (point2.y() - point1.y()) * cosf(theta), point2.z() - point1.z());
+                gl::vec3 normal = gl::normalize(gl::cross(du, dv));
+
+                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg});
             }
         }
     };
@@ -283,7 +287,11 @@ public:
                 float y_pos = x_r * sinf(theta) + y_r * cosf(theta);
                 float z_pos = z_r;
 
-                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {0, 0, 0}, {u_seg, v_seg}, {x_pos, y_pos, z_pos, 1.0f});
+                gl::vec3 du(-x_r * thetamax * sinf(theta) - y_r * thetamax * cosf(theta), x_r * thetamax * cosf(theta) - y_r * thetamax * sinf(theta), 0);
+                gl::vec3 dv((point2.x() - point1.x()) * cosf(theta) - (point2.y() - point1.y()) * sinf(theta), (point2.x() - point1.x()) * sinf(theta) + (point2.y() - point1.y()) * cosf(theta), point2.z() - point1.z());
+                gl::vec3 normal = gl::normalize(gl::cross(du, dv));
+
+                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg}, {x_pos, y_pos, z_pos, 1.0f});
             }
         }
     };
@@ -326,7 +334,13 @@ public:
                 float x_pos = radius * cosf(theta);
                 float y_pos = radius * sinf(theta);
 
-                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {0, 0, 0}, {u_seg, v_seg});
+                float x_norm = 2 * zmax * x_pos / rmax * rmax;
+                float y_norm = 2 * zmax * y_pos / rmax * rmax;
+                float z_norm = -1;
+
+                gl::vec3 normal = gl::vec3(x_norm, y_norm, z_norm).normalize();
+
+                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg});
             }
         }
     };
@@ -349,7 +363,13 @@ public:
                 float x_pos = radius * cosf(theta);
                 float y_pos = radius * sinf(theta);
 
-                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {0, 0, 0}, {u_seg, v_seg});
+                float x_norm = 2 * zmax * x_pos / rmax * rmax;
+                float y_norm = 2 * zmax * y_pos / rmax * rmax;
+                float z_norm = -1;
+
+                gl::vec3 normal = gl::vec3(x_norm, y_norm, z_norm).normalize();
+
+                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg});
             }
         }
     };
@@ -390,7 +410,11 @@ public:
                 float y_pos = radius * (1 - v_seg) * sinf(theta);
                 float z_pos = height;
 
-                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {0, 0, 0}, {u_seg, v_seg});
+                float x_norm = 0.0f;
+                float y_norm = 0.0f;
+                float z_norm = 1.0f;
+
+                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {x_norm, y_norm, z_norm}, {u_seg, v_seg});
             }
         }
     };
@@ -413,7 +437,11 @@ public:
                 float y_pos = radius * (1 - v_seg) * sinf(theta);
                 float z_pos = height;
 
-                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {0, 0, 0}, {u_seg, v_seg});
+                float x_norm = 0.0f;
+                float y_norm = 0.0f;
+                float z_norm = 1.0f;
+
+                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {x_norm, y_norm, z_norm}, {u_seg, v_seg});
             }
         }
     };
