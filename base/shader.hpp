@@ -65,7 +65,7 @@ namespace gl
     }
 
     // assume point light, Ashikhmin 2007
-    static void clothShader(Mesh &mesh, std::vector<Light> lights, PBRMaterial material, gl::vec3 view_pos)
+    static void clothShader(Mesh &mesh,std::vector<Light> lights, PBRMaterial material, gl::vec3 view_pos)
     {
         const auto [w, h] = mesh.getResolution();
         for (int i = 0; i <= w; i++)
@@ -74,15 +74,19 @@ namespace gl
             {
                 auto vertex_color = mesh.getVertex(i, j).baseColor;
                 auto &vertex = mesh.setVertex(i, j);
-                auto normal = vertex.normal.normalize();
-                auto view = (view_pos - vertex.position).normalize();
+                                //world coord
+                
+                auto vertex_pos = mesh.getModelMat() * vec4(vertex.position,1.0f);
+                auto normal = (mesh.getModelMat().inverse().transpose() * vec4(vertex.normal,0.0f)).xyz().normalize();
+                
+                auto view = (view_pos - vertex_pos.xyz()).normalize();
                 auto color = gl::vec3(0.0f);
 
                 for (auto &light : lights)
                 {
-                    auto light_dir = normalize(light.position - vertex.position);
+                    auto light_dir = normalize(light.position - vertex_pos.xyz());
                     auto halfway = normalize(view + light_dir);
-                    float dist = (light.position - vertex.position).length();
+                    float dist = (light.position - vertex_pos.xyz()).length();
                     float attenuation = light.intensity / pow(dist, 2.0f);
 
                     gl::vec3 radiance = light.color * attenuation;
@@ -113,29 +117,35 @@ namespace gl
         }
     }
 
-    // assume point light
+    //note that in the primitive, all vertex position are local coord, so we need to transform them to world coord
     static void BlinnPhong(Mesh &mesh, std::vector<Light> lights, PhongMaterial material, gl::vec3 view_pos)
     {
         const auto [w, h] = mesh.getResolution();
         for (int i = 0; i <= w; i++)
         {
             for (int j = 0; j <= h; j++)
-            {
+            {   
+                
+
                 auto vertex_color = mesh.getVertex(i, j).baseColor;
                 auto &vertex = mesh.setVertex(i, j);
-                auto normal = vertex.normal.normalize();
-                auto view = (view_pos - vertex.position).normalize();
+
+                //world coord
+                auto vertex_pos = mesh.getModelMat() * vec4(vertex.position,1.0f);
+                auto normal = (mesh.getModelMat().inverse().transpose() * vec4(vertex.normal,0.0f)).xyz().normalize();
+                
+                auto view = (view_pos - vertex_pos.xyz()).normalize();
                 auto color = gl::vec3(0.0f);
                 vec3 ambient = material.ka;
 
                 for (auto &light : lights)
                 {
-                    auto light_dir = (light.position - vertex.position).normalize();
+                    auto light_dir = (light.position - vertex_pos.xyz()).normalize();
                     auto light_color = light.color;
                     auto diffuse = std::max(0.0f, dot(normal, light_dir));
                     auto specular = std::max(0.0f, dot(normalize(light_dir + view), normal));
                     specular = pow(specular, material.shininess);
-                    color += vertex_color.rgb() * light_color * (ambient + diffuse * material.kd + specular * material.ks);
+                    color += light.intensity*vertex_color.rgb() * light_color * (ambient + diffuse * material.kd + specular * material.ks);
                 }
 
                 vertex.baseColor = gl::vec4(color, vertex.baseColor.a());

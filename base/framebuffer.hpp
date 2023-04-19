@@ -51,6 +51,8 @@ public:
     void setPixelColor(uint u, uint v, gl::vec3 color);
     // use sample buffer to set pixel color
     void setPixelColorFromBuffer();
+    // use sample depth to set pixel color, visualizing z-buffer (per pixel make average)
+    void setPixelDepthFromBuffer(float znear,float zfar);
     // set sample number
     void setSampleNumber(uint m, uint n);
     // initialize all sample buffers

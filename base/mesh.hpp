@@ -32,11 +32,6 @@ public:
         }
     };
 
-    //apply teture to change vertex color
-    void applyTextureVertexColor(){
-
-    };
-
     // Dice happens before the mesh actually initialize the grid
     virtual void dice(uint x_span_pix,uint y_span_pix, float factor=2.0)=0;
     

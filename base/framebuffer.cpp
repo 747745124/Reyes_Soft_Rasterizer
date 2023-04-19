@@ -61,11 +61,37 @@ void FrameBuffer::setPixelColorFromBuffer()
 
                 this->_pixel_color[i][j] += sample_color.rgb();
             }
-
-            this->_pixel_color[i][j] /= (float)this->getSampleNumber();
+                this->_pixel_color[i][j] /= (float)this->getSampleNumber();
         }
     }
 };
+
+
+// it's more like a dump depth buffer to pixel color
+void FrameBuffer::setPixelDepthFromBuffer(float znear,float zfar)
+{
+    clearColor();
+    for (uint i = 0; i < width; i++)
+    {
+        for (uint j = 0; j < height; j++)
+        {
+            for (uint k = 0; k < this->getSampleNumber(); k++)
+            {
+                // sorted from near to far
+                sort(this->_buffers[i][j][k].begin(), this->_buffers[i][j][k].end(), [](Sample &a, Sample &b)
+                     { return a.depth < b.depth; });
+                this->_pixel_color[i][j] += gl::vec3(this->_buffers[i][j][k][0].depth);
+            }
+            float pixel_depth = this->_pixel_color[i][j].r();
+            pixel_depth /= (float)this->getSampleNumber();
+            //linearize depth
+            float z = 2.0f * pixel_depth - 1.0f;//back to ndc
+            float z_n = (2.0f * znear) / (zfar + znear - z * (zfar - znear));
+            this->_pixel_color[i][j] = gl::vec3(z_n);
+        }
+    }
+};
+
 
 void FrameBuffer::setSampleNumber(uint m, uint n)
 {
