@@ -289,7 +289,7 @@ public:
 
                 gl::vec3 du(-x_r * thetamax * sinf(theta) - y_r * thetamax * cosf(theta), x_r * thetamax * cosf(theta) - y_r * thetamax * sinf(theta), 0);
                 gl::vec3 dv((point2.x() - point1.x()) * cosf(theta) - (point2.y() - point1.y()) * sinf(theta), (point2.x() - point1.x()) * sinf(theta) + (point2.y() - point1.y()) * cosf(theta), point2.z() - point1.z());
-                gl::vec3 normal = gl::normalize(gl::cross(du, dv));
+                gl::vec3 normal = gl::normalize(gl::cross(dv, du));
 
                 _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg}, {x_pos, y_pos, z_pos, 1.0f});
             }
@@ -485,7 +485,10 @@ public:
                 float y_pos = (major_radius + radius) * sinf(theta);
                 float z_pos = minor_radius * sinf(phi);
 
-                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {0, 0, 0}, {u_seg, v_seg});
+                gl::vec3 du(-theta_max * (major_radius + radius) * sinf(theta), theta_max * (major_radius + radius) * cosf(theta), 0);
+                gl::vec3 dv(-cosf(theta) * sin(phi) * minor_radius * (phi_max - phi_min), -sinf(theta) * sin(phi) * minor_radius * (phi_max - phi_min), cos(phi) * minor_radius * (phi_max - phi_min));
+                gl::vec3 normal = gl::normalize(gl::cross(du, dv));
+                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg});
             }
         }
     };
@@ -510,7 +513,11 @@ public:
                 float y_pos = (major_radius + radius) * sinf(theta);
                 float z_pos = minor_radius * sinf(phi);
 
-                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {0, 0, 0}, {u_seg, v_seg});
+                gl::vec3 du(-theta_max * (major_radius + radius) * sinf(theta), theta_max * (major_radius + radius) * cosf(theta), 0);
+                gl::vec3 dv(-cosf(theta) * sin(phi) * minor_radius * (phi_max - phi_min), -sinf(theta) * sin(phi) * minor_radius * (phi_max - phi_min), cos(phi) * minor_radius * (phi_max - phi_min));
+                gl::vec3 normal = gl::normalize(gl::cross(du, dv));
+
+                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg});
             }
         }
     };

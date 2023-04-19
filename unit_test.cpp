@@ -33,8 +33,9 @@ int main()
     {
         hyper.scale = gl::vec3(1.f);
         hyper.position = gl::vec3(1.0f, 0.0f, 8.0f);
-        gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
-        hyper.rotation = q * hyper.rotation;
+        gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(45.0f));
+        gl::Quat q2 = gl::Quat::fromAxisAngle(gl::vec3(1.0f, 0.0f, 0.0f), gl::to_radian(0.0f));
+        hyper.rotation = q2 * q * hyper.rotation;
     }
 
 
@@ -42,7 +43,7 @@ int main()
     {
         auto span = hyper.getProjectedBoundingVolumeSpan(mvp_hp, width, height);
         hyper.dice((uint)span.x(), (uint)span.y(), 1.0f);
-        gl::visualizeNormal(hyper);
+        // gl::visualizeNormal(hyper);
     }
 
     fb.clearColor();
@@ -56,12 +57,12 @@ int main()
         mat.shininess = 32.0f;
 
         Light light1, light2;
-        light1.position = gl::vec3(2.f, 0.f, 4.0f);
-        light1.color = gl::vec3(1.0f);
+        light1.position = gl::vec3(-4.f, 2.f, 1.0f);
+        light1.color = gl::vec3(1.0f,1.f,1.f);
         light2.position = gl::vec3(0.f, 0.f, 2.0f);
         light2.color = gl::vec3(1.0f, 1.0f, 1.0f);
 
-        gl::BlinnPhong(hyper, std::vector<Light>{light1, light2}, mat, p_cam.position);
+        gl::BlinnPhong(hyper, std::vector<Light>{light1}, mat, p_cam.position);
     }
 
     {
@@ -79,7 +80,6 @@ int main()
 
     fb.setPixelColorFromBuffer();
     auto img = fb.to_cv_mat();
-    cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
     cv::imshow("image", img);
     cv::waitKey();
 #endif
@@ -121,7 +121,6 @@ int main()
     fb.setPixelDepthFromBuffer(1.f, 50.f);
     // fb.setPixelColorFromBuffer();
     auto img = fb.to_cv_mat();
-    cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
     cv::imshow("image", img);
     cv::waitKey();
 #endif
@@ -182,7 +181,6 @@ int main()
 
     fb.setPixelColorFromBuffer();
     auto img = fb.to_cv_mat();
-    cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
     cv::imshow("image", img);
     cv::waitKey();
 #endif
@@ -210,7 +208,6 @@ int main()
     }
 
     auto img = fb.to_cv_mat();
-    cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
     cv::imshow("image", img);
     cv::waitKey();
 #endif
@@ -269,7 +266,6 @@ int main()
 
     fb.setPixelColorFromBuffer();
     auto img = fb.to_cv_mat();
-    cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
     cv::imshow("image", img);
     cv::waitKey();
 #endif
@@ -328,7 +324,7 @@ int main()
 
         gl::simpleTextureMapping(sphere, tex);
         gl::BlinnPhong(sphere, std::vector<Light>{light1}, mat, p_cam.position);
-        gl::clothShader(sphere, std::vector<Light>{light1, light2, light3, light4}, pbr_mat, p_cam.position);
+        //gl::clothShader(sphere, std::vector<Light>{light1, light2, light3, light4}, pbr_mat, p_cam.position);
     }
 
     fb.clearColor();
@@ -347,7 +343,6 @@ int main()
 
     fb.setPixelColorFromBuffer();
     auto img = fb.to_cv_mat();
-    cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
     cv::imshow("image", img);
     cv::waitKey();
 
@@ -417,7 +412,6 @@ int main()
 
         fb.setPixelColorFromBuffer();
         auto img = fb.to_cv_mat();
-        cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
         cv::imshow("image", img);
         cv::waitKey();
     }
@@ -499,7 +493,6 @@ int main()
 
         fb.setPixelColorFromBuffer();
         auto img = fb.to_cv_mat();
-        cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
         cv::imshow("image", img);
         cv::waitKey();
     }
@@ -586,7 +579,6 @@ int main()
 
         fb.setPixelColorFromBuffer();
         auto img = fb.to_cv_mat();
-        cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
         cv::imshow("image", img);
         cv::waitKey();
     }
@@ -677,7 +669,6 @@ int main()
 
         fb.setPixelColorFromBuffer();
         auto img = fb.to_cv_mat();
-        cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
         cv::imshow("image", img);
         cv::waitKey();
     }
@@ -766,7 +757,6 @@ int main()
             }
 
             auto img = fb.to_cv_mat();
-            cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
             cv::imshow("image", img);
             auto key = cv::waitKey(1000);
         }
