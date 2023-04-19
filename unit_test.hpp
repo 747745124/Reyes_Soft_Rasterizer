@@ -11,4 +11,6 @@
 #include "./base/primitive.hpp"
 #include "./base/texture.hpp"
 #include "./base/shader.hpp"
+#include "./base/light.hpp"
+#include "../utils/pattern.hpp"
 #include <opencv2/opencv.hpp>

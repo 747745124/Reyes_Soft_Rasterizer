@@ -1,5 +1,5 @@
 #include "./texture.hpp"
-//probably TODO: mipmap & tri-linear interpolation
+//Probably TODO: mipmap & tri-linear interpolation
 Texture2D::Texture2D(const std::string path, int FORMAT = CV_32FC3) : _path(path)
 {
     // read image from given path
@@ -106,3 +106,4 @@ gl::vec3 Texture2D::getTexelColor(float u, float v,LERP_MODE mode)
 
     return gl::vec3(0.0f);
 };
+

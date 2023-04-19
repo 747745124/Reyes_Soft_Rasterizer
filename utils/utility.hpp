@@ -4,8 +4,85 @@
 #include <opencv2/opencv.hpp>
 #include <random>
 
+// This file defines shader utilities and some math functions
 namespace gl
 {
+    static float sign(float x)
+    {
+        if (x < 0.f)
+            return -1.f;
+        if (x > 0.f)
+            return 1.f;
+        return 0.f;
+    }
+
+    static float lerp(float x, float y, float t)
+    {
+        return x + t * (y - x);
+    }
+
+    template <int N>
+    static vec<N, float> sign(vec<N, float> v)
+    {
+        vec<N, float> res;
+        for (int i = 0; i < N; i++)
+        {
+            res[i] = sign(v[i]);
+        }
+        return res;
+    }
+
+    template <int N>
+    static vec<N, float> abs(vec<N, float> v)
+    {
+        vec<N, float> res;
+        for (int i = 0; i < N; i++)
+        {
+            res[i] = fabs(v[i]);
+        }
+
+        return res;
+    }
+
+    template <int N>
+    static vec<N, float> min(vec<N, float> lhs, vec<N, float> rhs)
+    {
+        vec<N, float> res;
+        for (int i = 0; i < N; i++)
+        {
+            res[i] = std::min(lhs[i], rhs[i]);
+        }
+        return res;
+    }
+
+    template <int N>
+    static vec<N, float> max(vec<N, float> lhs, vec<N, float> rhs)
+    {
+        vec<N, float> res;
+        for (int i = 0; i < N; i++)
+        {
+            res[i] = std::max(lhs[i], rhs[i]);
+        }
+        return res;
+    }
+
+    static float smoothstep(float edge0, float edge1, float x)
+    {
+        x = std::clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+        return x * x * (3 - 2 * x);
+    };
+
+    static float smoothstep_alt(float edge0, float edge1, float x)
+    {
+        x = std::clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+        return x * x * x * (x * (x * 6 - 15) + 10);
+    };
+
+    static float fract(float x)
+    {
+        return x - floor(x);
+    }
+
     static float VanDerCorput(uint bits)
     {
         bits = (bits << 16u) | (bits >> 16u);
@@ -13,7 +90,7 @@ namespace gl
         bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
         bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
         bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-        return float(bits) * 2.3283064365386963e-10; // / 0x100000000
+        return float(bits) * 2.3283064365386963e-10; // 
     }
 
     static gl::vec2 Hammersley(uint i, uint N)
@@ -30,6 +107,23 @@ namespace gl
     static float filtered_step(float edge, float x, float w)
     {
         return std::clamp((x - edge + w / 2.0f) / w, 0.0f, 1.0f);
+    }
+
+    static float tri_sig(float x)
+    {
+        float h = fract(x * 0.5f) - 0.5f;
+        return 1.0f - 2.0f * fabs(h);
+    }
+
+    template <int N>
+    static vec<N, float> tri_sig(vec<N, float> v)
+    {
+        vec<N, float> res;
+        for (int i = 0; i < N; i++)
+        {
+            res[i] = tri_sig(v[i]);
+        }
+        return res;
     }
 
     static float sign(gl::vec2 p1, gl::vec2 p2, gl::vec2 p3)

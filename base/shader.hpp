@@ -2,6 +2,8 @@
 #include "./mesh.hpp"
 #include "./light.hpp"
 #include "./material.hpp"
+#include "../utils/utility.hpp"
+#include "../utils/pattern.hpp"
 namespace gl
 {
     static void setOpacity(Mesh &mesh, float opacity)
@@ -16,21 +18,48 @@ namespace gl
         }
     }
 
-    static void checkerBoard(Mesh &mesh, uint step_size = 10)
+    static void setColor(Mesh &mesh, gl::vec4 color)
     {
         const auto [w, h] = mesh.getResolution();
         for (int i = 0; i <= w; i++)
         {
             for (int j = 0; j <= h; j++)
             {
-                if ((i / step_size + j / step_size) % 2 == 0)
-                {
-                    mesh.setVertexColor(i, j, gl::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-                }
-                else
-                {
-                    mesh.setVertexColor(i, j, gl::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-                }
+                mesh.setVertex(i, j).baseColor = color;
+            }
+        }
+    }
+
+
+    float filtered_checkerboard(gl::vec2 uv, gl::vec2 du, gl::vec2 dv)
+    {
+        using namespace gl;
+        vec2 kernel = max(abs(du), abs(dv));
+        // integral of the kernel
+        float ix = (tri_sig(uv + 0.5 * kernel) - tri_sig(uv - 0.5 * kernel)).x() / kernel.u();
+        float iy = (tri_sig(uv + 0.5 * kernel) - tri_sig(uv - 0.5 * kernel)).y() / kernel.v();
+        return 0.5f - 0.5f * ix * iy;
+    }
+
+    float unfiltered_checkerboard(gl::vec2 uv)
+    {
+        using namespace gl;
+        float sx = sign(fract(uv.u() * 0.5f) - 0.5f);
+        float sy = sign(fract(uv.v() * 0.5f) - 0.5f);
+        return .5f - .5f * sx * sy;
+    }
+
+    static void checkerBoard(Mesh &mesh, uint step_size = 10, uint filter_coeff = 4)
+    {
+        const auto [w, h] = mesh.getResolution();
+        for (int i = 0; i <= w; i++)
+        {
+            for (int j = 0; j <= h; j++)
+            {
+                float u = (float)i / (float)w;
+                float v = (float)j / (float)h;
+                float checker = filtered_checkerboard(gl::vec2(u, v) * step_size, gl::vec2((float)(step_size)*filter_coeff / (float)w, 0.0f), gl::vec2(0.0f, (float)(step_size)*filter_coeff / (float)h));
+                mesh.setVertexColor(i, j, gl::vec4(vec3(checker), 1.0f));
             }
         }
     }
@@ -70,7 +99,7 @@ namespace gl
             }
         }
     };
-
+    
     static void simpleTextureMapping(Mesh &mesh, Texture2D &tex, LERP_MODE mode = LERP_MODE::BILINEAR)
     {
         const auto [w, h] = mesh.getResolution();
@@ -114,8 +143,8 @@ namespace gl
         }
     };
 
-    // displace the vertex
-    static void Displacement(Mesh &mesh, float bumpy_scale = 0.1f)
+    // displace the vertex along normal
+    static void displacement(Mesh &mesh, float bumpy_scale = 0.1f)
     {
         const auto [w, h] = mesh.getResolution();
         for (int i = 0; i <= w; i++)
@@ -124,6 +153,23 @@ namespace gl
             {
                 auto &vertex = mesh.setVertex(i, j);
                 vertex.position += vertex.normal * bumpy_scale;
+            }
+        }
+    };
+
+    static void displacementPerlin(Mesh &mesh, uint tile = 20, float scale = 0.1f)
+    {
+        const auto [w, h] = mesh.getResolution();
+        for (int i = 0; i <= w; i++)
+        {
+            for (int j = 0; j <= h; j++)
+            {
+                float u = (float)i / (float)w;
+                float v = (float)j / (float)h;
+                u *= tile;
+                v *= tile;
+                auto &vertex = mesh.setVertex(i, j);
+                vertex.position += vertex.normal * gl::perlin_noise_2D(vec2(u, v)) * scale;
             }
         }
     };

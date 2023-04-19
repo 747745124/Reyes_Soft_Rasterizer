@@ -1,5 +1,8 @@
 #include "./unit_test.hpp"
-#define TEST_DISPLACEMENT
+
+// #define TEST_PERLIN_DISPLACEMENT
+// #define TEST_PERLIN
+// #define TEST_FILTER_CHECKER
 // #define TEST_TEXTURE
 // #define TEST_PLANE
 // #define TEST_PHONG
@@ -14,10 +17,10 @@
 
 int main()
 {
-#ifdef TEST_DISPLACEMENT
+#ifdef TEST_PERLIN_DISPLACEMENT
     Texture2D tex("../assets/textures/aki.jpeg", CV_32FC3);
-    uint width = 400;
-    uint height = 400;
+    uint width = 600;
+    uint height = 600;
 
     PerspectiveCamera p_cam(gl::to_radian(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 
@@ -27,12 +30,101 @@ int main()
 
     sphere.scale = gl::vec3(0.9f);
     sphere.position = gl::vec3(0.0f, 0.0f, 6.0f);
-    gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(135.0f));
+    gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
     sphere.rotation = q * sphere.rotation;
 
     gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
     auto span = sphere.getProjectedBoundingVolumeSpan(mvp, width, height);
-    sphere.dice((uint)span.x(), (uint)span.y(), 2.0f);
+    sphere.dice((uint)span.x(), (uint)span.y(), 3.0f);
+
+    {
+        PhongMaterial mat;
+        mat.ka = 0.3f;
+        mat.kd = gl::vec3(0.5f);
+        mat.ks = gl::vec3(0.5f);
+        mat.shininess = 32.0f;
+
+        Light light1, light2,light3;
+        light1.position = gl::vec3(2.0f, -1.0f, 4.0f);
+        light1.color = gl::vec3(1.0f);
+        light2.position = gl::vec3(2.0f, 4.0f, 2.0f);
+        light2.color = gl::vec3(1.0f, 1.0f, 1.0f);
+        light3.position = gl::vec3(3.0f, -3.0f, 2.0f);
+        light2.color = gl::vec3(1.0f, 1.0f, 1.0f);
+
+        gl::displacementPerlin(sphere, 20, 0.1f);
+        gl::setColor(sphere,gl::vec4(0.28,0.38,1.0f,1.0f));
+        gl::BlinnPhong(sphere, std::vector<Light>{light1, light2, light3}, mat, p_cam.position);
+    }
+
+    fb.clearColor();
+    fb.clearBuffer(1.0f, gl::vec4(gl::vec3(0.0f), 1.0f));
+
+    // loop over micropolygons of sphere
+    const auto [w, h] = sphere.getResolution();
+    for (int i = 0; i < w; i++)
+    {
+        for (int j = 0; j < h; j++)
+        {
+            auto mp = sphere.getMicropolygon(i, j);
+            fb.updateBufferByMicropolygon(mp, mvp, LERP_MODE::CORNER);
+        }
+    }
+
+    fb.setPixelColorFromBuffer();
+    auto img = fb.to_cv_mat();
+    cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
+    cv::imshow("image", img);
+    cv::waitKey();
+#endif
+
+#ifdef TEST_PERLIN
+    uint width = 400;
+    uint height = 400;
+
+    PerspectiveCamera p_cam(gl::to_radian(45.0f), (float)width / (float)height, 0.1f, 100.0f);
+    FrameBuffer fb(width, height, 1, 1);
+
+    fb.clearColor();
+    fb.clearBuffer(1.0f, gl::vec4(gl::vec3(0.0f), 1.0f));
+
+    for (uint i = 0; i < width; i++)
+    {
+        for (uint j = 0; j < height; j++)
+        {
+            float x = 8.f * (float)i / width;
+            float y = 8.f * (float)j / height;
+            float noise = gl::fractal_perlin_2D(x, y,4);
+            gl::vec3 color = gl::vec3(noise);
+            fb.setPixelColor(i, j, color);
+        }
+    }
+
+    auto img = fb.to_cv_mat();
+    cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
+    cv::imshow("image", img);
+    cv::waitKey();
+#endif
+
+#ifdef TEST_FILTER_CHECKER
+    Texture2D tex("../assets/textures/aki.jpeg", CV_32FC3);
+    uint width = 600;
+    uint height = 600;
+
+    PerspectiveCamera p_cam(gl::to_radian(45.0f), (float)width / (float)height, 0.1f, 100.0f);
+
+    // MSAA 4x
+    FrameBuffer fb(width, height, 2, 2);
+    Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f));
+
+    sphere.scale = gl::vec3(0.9f);
+    sphere.position = gl::vec3(0.0f, 0.0f, 6.0f);
+    gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(-90.0f));
+    sphere.rotation = q * sphere.rotation;
+
+    gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
+    auto span = sphere.getProjectedBoundingVolumeSpan(mvp, width, height);
+    sphere.dice((uint)span.x(), (uint)span.y(), 3.0f);
 
     {
         PhongMaterial mat;
@@ -42,13 +134,12 @@ int main()
         mat.shininess = 32.0f;
 
         Light light1, light2;
-        light1.position = gl::vec3(0.0f, 0.0f, 10.0f);
+        light1.position = gl::vec3(6.0f, 4.0f, 2.0f);
         light1.color = gl::vec3(1.0f);
-        light2.position = gl::vec3(1.0f, 1.0f, 5.0f);
-        light2.color = gl::vec3(1.0f, 1.0f, 1.0f);
+        light2.position = gl::vec3(20.0f, 1.0f, 5.0f);
+        light2.color = gl::vec3(1.0f, 0.0f, 1.0f);
 
-        // gl::simpleTextureMapping(sphere, tex, LERP_MODE::NEAREST);
-        gl::checkerBoard(sphere, 10.f);
+        gl::checkerBoard(sphere, 10);
         gl::Displacement(sphere, 1.0f);
         gl::BlinnPhong(sphere, std::vector<Light>{light1, light2}, mat, p_cam.position);
     }
@@ -63,7 +154,7 @@ int main()
         for (int j = 0; j < h; j++)
         {
             auto mp = sphere.getMicropolygon(i, j);
-            fb.updateBufferByMicropolygon(mp, mvp);
+            fb.updateBufferByMicropolygon(mp, mvp, LERP_MODE::CORNER);
         }
     }
 
