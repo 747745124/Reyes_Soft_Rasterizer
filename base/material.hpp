@@ -3,21 +3,22 @@
 
 struct PhongMaterial
 {
-    gl::vec3 albedo;
-    float ka;
-    gl::vec3 kd;
-    gl::vec3 ks;
-    float shininess;
+    gl::vec3 albedo = gl::vec3(1.0f);
+    float ka = 0.3f;
+    gl::vec3 kd = gl::vec3(0.5f);
+    gl::vec3 ks = gl::vec3(0.5f);
+    ;
+    float shininess = 32.f;
 
     PhongMaterial() = default;
 };
 
 struct PBRMaterial
 {
-    gl::vec3 albedo;
-    float metallic;
-    float roughness;
-    float ao;
+    gl::vec3 albedo = gl::vec3(1.0f);
+    float metallic = 0.0f;
+    float roughness = 0.3f;
+    float ao = 0.5f;
 
     PBRMaterial() = default;
     float GGX(float NdotH) const
@@ -64,14 +65,14 @@ struct PBRMaterial
         // Cloth BRDF
         float a2 = roughness * roughness;
         float cos2h = NoH * NoH;
-        float sin2h = std::max(1.0 - cos2h, 0.0078125); // 2^(-14/2), so sin2h^2 > 0 in fp16
+        float sin2h = std::max(1.0 - cos2h, 0.0078125);
         float sin4h = sin2h * sin2h;
         float cot2 = -cos2h / (a2 * sin2h);
         return 1.0 / (M_PI * (4.0 * a2 + 1.0) * sin4h) * (4.0 * exp(cot2) + sin4h);
     }
 
     // ue4 2013
-    float shadowMaskingUnreal(gl::vec3 N, gl::vec3 V, gl::vec3 L, float roughness)
+    float shadowMaskingUnreal(gl::vec3 N, gl::vec3 V, gl::vec3 L)
     {
         float NdotV = std::max(dot(N, V), 0.0f);
         float NdotL = std::max(dot(N, L), 0.0f);
@@ -80,7 +81,7 @@ struct PBRMaterial
         return ggx1 * ggx2;
     }
 
-    gl::vec3 ImportanceSamplingGGX(gl::vec2 Xi, gl::vec3 N, float roughness)
+    gl::vec3 ImportanceSamplingGGX(gl::vec2 Xi, gl::vec3 N)
     {
         using namespace gl;
         float a = roughness * roughness;
@@ -102,6 +103,4 @@ struct PBRMaterial
         vec3 sample_vec = tangent * H.x() + bitangent * H.y() + N * H.z();
         return normalize(sample_vec);
     };
-
-
 };

@@ -22,6 +22,19 @@ namespace gl
     }
 
     template <int N>
+    static vec<N, float> lerp(vec<N, float> x, vec<N, float> y, float t)
+    {
+        vec<N, float> res;
+        
+        for (int i = 0; i < N; i++)
+        {
+            res[i] = lerp(x[i], y[i], t);
+        }
+
+        return res;
+    }
+
+    template <int N>
     static vec<N, float> sign(vec<N, float> v)
     {
         vec<N, float> res;

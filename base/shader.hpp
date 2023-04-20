@@ -63,8 +63,60 @@ namespace gl
         }
     }
 
+    // assume point light, UE4 simplified version
+    static void SimpleBRDFShader(Mesh &mesh, std::vector<Light> lights, PBRMaterial material, gl::vec3 view_pos)
+    {
+        using namespace gl;
+        const auto [w, h] = mesh.getResolution();
+        for (int i = 0; i <= w; i++)
+        {
+            for (int j = 0; j <= h; j++)
+            {
+                auto vertex_color = mesh.getVertex(i, j).baseColor;
+                auto &vertex = mesh.setVertex(i, j);
+
+                auto vertex_pos = mesh.getModelMat() * vec4(vertex.position, 1.0f);
+                auto normal = (mesh.getModelMat().inverse().transpose() * vec4(vertex.normal, 0.0f)).xyz().normalize();
+
+                auto view = (view_pos - vertex_pos.xyz()).normalize();
+                auto color = gl::vec3(0.0f);
+
+                vec3 F0 = vec3(0.04);
+                vec3 albedo = vertex_color.xyz();
+                F0 = lerp(F0, albedo, material.metallic);
+
+                for (auto &light : lights)
+                {
+                    vec3 kS = F0;
+                    vec3 kD = vec3(1.0) - kS;
+                    kD = kD * 1.f - material.metallic;
+
+                    auto light_dir = normalize(light.position - vertex_pos.xyz());
+                    auto halfway = normalize(view + light_dir);
+                    float dist = (light.position - vertex_pos.xyz()).length();
+                    float attenuation = light.intensity / pow(dist, 2.0f);
+
+                    vec3 radiance = light.color * attenuation;
+                    float D = material.GGX(dot(normal, halfway));
+                    float G = material.shadowMaskingUnreal(normal, view, light_dir);
+                    vec3 F = material.FresnelSchlick(std::max(dot(halfway, view), 0.f), F0);
+                    gl::vec3 upper(D * G * F);
+
+                    float NoL = std::max(dot(normal, light_dir), 0.0f);
+                    float NoV = std::max(dot(normal, view), 0.0f);
+                    float lower = 4.0 * NoL * NoV + 0.0001;
+                    vec3 specular_brdf = upper / lower;
+
+                    color += radiance * (kD * albedo / M_PI + specular_brdf) * NoL * vertex_color.rgb();
+                }
+
+                vertex.baseColor = gl::vec4(color, vertex.baseColor.a());
+            }
+        }
+    };
+
     // assume point light, Ashikhmin 2007
-    static void clothShader(Mesh &mesh, std::vector<Light> &lights, PBRMaterial material, gl::vec3 view_pos)
+    static void clothShader(Mesh &mesh, std::vector<Light> lights, PBRMaterial material, gl::vec3 view_pos)
     {
         const auto [w, h] = mesh.getResolution();
         for (int i = 0; i <= w; i++)
@@ -73,7 +125,6 @@ namespace gl
             {
                 auto vertex_color = mesh.getVertex(i, j).baseColor;
                 auto &vertex = mesh.setVertex(i, j);
-                // world coord
 
                 auto vertex_pos = mesh.getModelMat() * vec4(vertex.position, 1.0f);
                 auto normal = (mesh.getModelMat().inverse().transpose() * vec4(vertex.normal, 0.0f)).xyz().normalize();
@@ -95,7 +146,7 @@ namespace gl
                     float NoV = std::max(dot(normal, view), 0.0f);
                     float lower = 4.0f * (NoL + NoV - (NoL * NoV)) + 0.0001f;
                     gl::vec3 BRDF = upper / lower;
-                    color += radiance * BRDF * NoL * vertex_color.rgb();
+                    color += vec3(0.03f) * material.albedo * material.ao+radiance * BRDF * NoL * vertex_color.rgb();
                 }
 
                 vertex.baseColor = gl::vec4(color, vertex.baseColor.a());
@@ -135,12 +186,13 @@ namespace gl
         using namespace gl;
         vec3 projcoord = fragPosLightSpace.xyz() / fragPosLightSpace.w();
         projcoord = projcoord * 0.5f + 0.5f;
+
         float closestDepth = shadow->getTexelDepth(projcoord.x(), projcoord.y());
         float currentDepth = projcoord.z();
 
         float shadow_value = 0.0;
-        
-        if(currentDepth > closestDepth + 0.005)
+
+        if (currentDepth > closestDepth + 0.005)
             shadow_value = 1.0f;
         else
             shadow_value = 0.0f;
@@ -152,7 +204,7 @@ namespace gl
     }
 
     // note that in the primitive, all vertex position are local coord, so we need to transform them to world coord
-    static void BlinnPhong(Mesh &mesh, std::vector<Light>& lights, PhongMaterial material, gl::vec3 view_pos, TextureShadow *shadow = nullptr, gl::mat4 lightSpaceMat = gl::mat4(1.0f))
+    static void BlinnPhong(Mesh &mesh, std::vector<Light> lights, PhongMaterial material, gl::vec3 view_pos, TextureShadow *shadow = nullptr, gl::mat4 lightSpaceMat = gl::mat4(1.0f))
     {
         const auto [w, h] = mesh.getResolution();
         for (int i = 0; i <= w; i++)
@@ -172,7 +224,7 @@ namespace gl
                 vec3 ambient = material.ka;
 
                 for (auto &light : lights)
-                {   
+                {
                     float shadow_value = 0.f;
                     if (shadow != nullptr)
                     {
@@ -185,7 +237,7 @@ namespace gl
                     auto diffuse = std::max(0.0f, dot(normal, light_dir));
                     auto specular = std::max(0.0f, dot(normalize(light_dir + view), normal));
                     specular = pow(specular, material.shininess);
-                    color += light.intensity * vertex_color.rgb() * light_color * (ambient + (1.0f-shadow_value)*(diffuse * material.kd + specular * material.ks));
+                    color += vertex_color.rgb() * light_color * (ambient + (1.0f - shadow_value) * (diffuse * material.kd + specular * material.ks));
                 }
 
                 vertex.baseColor = gl::vec4(color, vertex.baseColor.a());
@@ -207,7 +259,7 @@ namespace gl
         }
     };
 
-    static void displacementPerlin(Mesh &mesh, uint tile = 20, float scale = 0.1f)
+    static void displacementPerlin(Mesh &mesh, uint tile = 20, float scale = 0.2f)
     {
         const auto [w, h] = mesh.getResolution();
         for (int i = 0; i <= w; i++)
@@ -220,6 +272,23 @@ namespace gl
                 v *= tile;
                 auto &vertex = mesh.setVertex(i, j);
                 vertex.position += vertex.normal * gl::perlin_noise_2D(vec2(u, v)) * scale;
+            }
+        }
+    };
+
+    static void displacementFractalPerlin(Mesh &mesh, uint tile = 20, float scale = 0.2f, uint octaves = 4)
+    {
+        const auto [w, h] = mesh.getResolution();
+        for (int i = 0; i <= w; i++)
+        {
+            for (int j = 0; j <= h; j++)
+            {
+                float u = (float)i / (float)w;
+                float v = (float)j / (float)h;
+                u *= tile;
+                v *= tile;
+                auto &vertex = mesh.setVertex(i, j);
+                vertex.position += vertex.normal * gl::fractal_perlin_2D(vec2(u, v), octaves) * scale;
             }
         }
     };

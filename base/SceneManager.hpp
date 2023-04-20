@@ -32,7 +32,7 @@ public:
     }
 
     void blinnPhong(int mesh_index, PhongMaterial &material, bool enable_shadow = false)
-    {   
+    {
         assert(mesh_index >= 0 && mesh_index < _meshes.size());
         Mesh &mesh = *_meshes[mesh_index];
         if (!enable_shadow)
@@ -60,14 +60,14 @@ public:
     void initShadowSetting()
     {
         _shadow_tex = TextureShadow(2000, 2000);
-        _shadow_cam = std::make_unique<OrthographicCamera>(-10.0f * (float)width / (float)height, 10.0f * (float)width / (float)height, -10.0f, 10.0f, 0.1, 50.f);
+        _shadow_cam = std::make_unique<OrthographicCamera>(-30.0f * (float)width / (float)height, 30.0f * (float)width / (float)height, -30.0f, 30.0f, 0.1, 50.f);
     }
 
     void generateDepthTex()
     {
         // only use single light for now
         assert(_lights.size() >= 1 && _meshes.size() >= 1);
-        this->lightSpaceMatrix = _shadow_cam->getProjectionMat() * gl::getViewMat(_lights[0].position, _meshes[0]->position, gl::vec3(0, 1, 0));
+        this->lightSpaceMatrix = _shadow_cam->getProjectionMat() * gl::getViewMat(_lights[0].position, gl::vec3(0, 0, 1), gl::vec3(0, 1, 0));
         for (auto &mesh : _meshes)
             _shadow_tex.renderToTextureShadow(*mesh, lightSpaceMatrix);
     };
