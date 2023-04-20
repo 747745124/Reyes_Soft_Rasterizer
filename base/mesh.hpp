@@ -72,6 +72,10 @@ public:
             max_y = std::max(max_y,scr_coord.y());
         }
 
+        min_x = std::max(min_x,0.0f);
+        min_y = std::max(min_y,0.0f);
+        max_x = std::min(max_x,float(width));
+        max_y = std::min(max_y,float(height));
         span.x() = max_x - min_x;
         span.y() = max_y - min_y;
 
@@ -115,6 +119,7 @@ public:
         return Micropolygon(_grids[u][v], _grids[u + 1][v], _grids[u + 1][v + 1], _grids[u][v + 1]);
     };
 
+    virtual ~Mesh(){};
 
 protected:
     std::array<std::pair<float,float>,3> _bounding_volume;

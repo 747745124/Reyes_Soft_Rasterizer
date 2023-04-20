@@ -61,37 +61,36 @@ void FrameBuffer::setPixelColorFromBuffer()
 
                 this->_pixel_color[i][j] += sample_color.rgb();
             }
-                this->_pixel_color[i][j] /= (float)this->getSampleNumber();
+            this->_pixel_color[i][j] /= (float)this->getSampleNumber();
         }
     }
 };
 
-
 // it's more like a dump depth buffer to pixel color
-void FrameBuffer::setPixelDepthFromBuffer(float znear,float zfar)
+void FrameBuffer::setPixelDepthFromBuffer(float znear, float zfar)
 {
     clearColor();
     for (uint i = 0; i < width; i++)
     {
         for (uint j = 0; j < height; j++)
-        {
+        {   
+            float sample_depth_sum = 0.0f;
             for (uint k = 0; k < this->getSampleNumber(); k++)
             {
                 // sorted from near to far
                 sort(this->_buffers[i][j][k].begin(), this->_buffers[i][j][k].end(), [](Sample &a, Sample &b)
                      { return a.depth < b.depth; });
-                this->_pixel_color[i][j] += gl::vec3(this->_buffers[i][j][k][0].depth);
+                sample_depth_sum += this->_buffers[i][j][k][0].depth;
             }
-            float pixel_depth = this->_pixel_color[i][j].r();
-            pixel_depth /= (float)this->getSampleNumber();
-            //linearize depth
-            float z = 2.0f * pixel_depth - 1.0f;//back to ndc
+
+            //linearize step
+            float pixel_depth = sample_depth_sum/(float)this->getSampleNumber();
+            float z = 2.0f * pixel_depth - 1.0f; // back to ndc
             float z_n = (2.0f * znear) / (zfar + znear - z * (zfar - znear));
             this->_pixel_color[i][j] = gl::vec3(z_n);
         }
     }
 };
-
 
 void FrameBuffer::setSampleNumber(uint m, uint n)
 {
@@ -113,7 +112,7 @@ void FrameBuffer::setSampleNumber(uint m, uint n)
     initBuffers();
 };
 
-void FrameBuffer::clearBuffer(float bg_depth = 1.0, gl::vec4 bg_color = gl::vec4(0.0, 0.0, 0.0, 1.0))
+void FrameBuffer::clearBuffer(float bg_depth, gl::vec4 bg_color)
 {
     for (uint i = 0; i < width; i++)
     {
@@ -163,7 +162,7 @@ void FrameBuffer::updateBufferByMicropolygon(Micropolygon &mp, gl::mat4 mvp, LER
                 if (isfinite(sample_depth) && sample_depth <= 1.0 && sample_depth >= 0.0)
                 {
                     if (LERP_MODE::CORNER == mode)
-                        //push the cornor color to the buffer
+                        // push the cornor color to the buffer
                         _buffers[i][j][k].push_back(Sample(sample_depth, mp.v0.baseColor));
                     else if (LERP_MODE::BILINEAR == mode)
                     {

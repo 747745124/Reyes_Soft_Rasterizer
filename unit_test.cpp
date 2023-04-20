@@ -1,5 +1,7 @@
 #include "./unit_test.hpp"
-#define TEST_PRIMITIVE_NORMAL
+#define TEST_API
+//  #define TEST_SCENE_MANAGER
+//  #define TEST_PRIMITIVE_NORMAL
 //  #define TEST_ZBUFFER_VIS
 //  #define TEST_PERLIN_DISPLACEMENT
 //  #define TEST_PERLIN
@@ -18,6 +20,80 @@
 
 int main()
 {
+
+#ifdef TEST_API
+    SceneManager scene;
+    scene.fovy = gl::to_radian(45.0f);
+    scene.znear = 0.1f;
+    scene.zfar = 100.0f;
+    scene.setWidth(400, 400);
+    scene.setSpp(1, 1);
+    scene.initCamera();
+    scene.initFramebuffer();
+
+
+
+#endif
+
+#ifdef TEST_SCENE_MANAGER
+    SceneManager scene;
+    scene.fovy = gl::to_radian(45.0f);
+    scene.znear = 0.1f;
+    scene.zfar = 100.0f;
+    scene.setWidth(400, 400);
+    scene.setSpp(2, 2);
+    scene.initCamera();
+    scene.initFramebuffer();
+
+    std::unique_ptr<Hyperboloid> hyper = std::make_unique<Hyperboloid>(gl::vec3(-1, -1, -1), gl::vec3(1, 1, 1), gl::to_radian(360.f));
+    std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>(1.0, -1.0, 1.0, gl::to_radian(360.0f));
+    std::unique_ptr<Disk> disk = std::make_unique<Disk>(0.1, 10.f, gl::to_radian(360.0f));
+
+    std::unique_ptr<Light> light = std::make_unique<Light>();
+    std::unique_ptr<PhongMaterial> mat = std::make_unique<PhongMaterial>();
+
+    {
+        hyper->scale = gl::vec3(1.f);
+        hyper->position = gl::vec3(1.0f, 0.0f, 8.0f);
+        gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
+        gl::Quat q2 = gl::Quat::fromAxisAngle(gl::vec3(1.0f, 0.0f, 0.0f), gl::to_radian(45.0f));
+        hyper->rotation = q * hyper->rotation;
+
+        sphere->scale = gl::vec3(1.f);
+        sphere->position = gl::vec3(-1.0f, 0.0f, 8.0f);
+        sphere->rotation = q * sphere->rotation;
+
+        disk->position = gl::vec3(0.0f, 0.0f, 10.0f);
+        disk->rotation = q2 * disk->rotation;
+    }
+
+    mat->ka = 0.2f;
+    mat->kd = gl::vec3(0.5f);
+    mat->ks = gl::vec3(0.5f);
+    mat->shininess = 32.0f;
+
+    light->position = gl::vec3(-2.f, 2.f, 1.0f);
+    light->color = gl::vec3(1.0f, 1.0f, 1.0f);
+
+    scene.dice(*hyper);
+    scene.dice(*sphere);
+    scene.dice(*disk);
+    // finalize light
+    scene.addLight(std::move(light));
+    scene.blinnPhong(*hyper, *mat);
+    scene.blinnPhong(*disk, *mat);
+    scene.blinnPhong(*sphere, *mat);
+    gl::displacementPerlin(*sphere, 20u, 0.3f);
+    gl::displacementPerlin(*disk, 20u, 0.3f);
+
+    // finialize mesh
+    scene.addMesh(std::move(hyper));
+    scene.addMesh(std::move(sphere));
+    scene.addMesh(std::move(disk));
+    scene.drawMeshes();
+    scene.setPixelColorBuffer();
+    scene.showImage();
+#endif
 
 #ifdef TEST_PRIMITIVE_NORMAL
     // linearize depth visualize
@@ -38,12 +114,11 @@ int main()
         hyper.rotation = q2 * q * hyper.rotation;
     }
 
-
     gl::mat4 mvp_hp = p_cam.getProjectionMat() * p_cam.getViewMat() * hyper.getModelMat();
     {
         auto span = hyper.getProjectedBoundingVolumeSpan(mvp_hp, width, height);
         hyper.dice((uint)span.x(), (uint)span.y(), 1.0f);
-        // gl::visualizeNormal(hyper);
+        gl::visualizeNormal(hyper);
     }
 
     fb.clearColor();
@@ -58,7 +133,7 @@ int main()
 
         Light light1, light2;
         light1.position = gl::vec3(-4.f, 2.f, 1.0f);
-        light1.color = gl::vec3(1.0f,1.f,1.f);
+        light1.color = gl::vec3(1.0f, 1.f, 1.f);
         light2.position = gl::vec3(0.f, 0.f, 2.0f);
         light2.color = gl::vec3(1.0f, 1.0f, 1.0f);
 
@@ -324,7 +399,7 @@ int main()
 
         gl::simpleTextureMapping(sphere, tex);
         gl::BlinnPhong(sphere, std::vector<Light>{light1}, mat, p_cam.position);
-        //gl::clothShader(sphere, std::vector<Light>{light1, light2, light3, light4}, pbr_mat, p_cam.position);
+        // gl::clothShader(sphere, std::vector<Light>{light1, light2, light3, light4}, pbr_mat, p_cam.position);
     }
 
     fb.clearColor();
@@ -777,7 +852,7 @@ int main()
         auto [w, h] = sphere.getResolution();
 
         PerspectiveCamera p_cam(gl::to_radian(45.0f), 1.0f, 0.1f, 100.0f);
-        gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat()*sphere.getModelMat();
+        gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
 
         uint width = 800;
         uint height = 800;
@@ -789,7 +864,7 @@ int main()
             image.convertTo(image, CV_8UC3, 1.0f);
 
             auto [w, h] = sphere.getResolution();
-            std::cout<<gl::getScreenCoord(sphere.position, mvp, width, height)<<std::endl;
+            std::cout << gl::getScreenCoord(sphere.position, mvp, width, height) << std::endl;
             for (int i = 0; i < w; i++)
             {
                 for (int j = 0; j < h; j++)

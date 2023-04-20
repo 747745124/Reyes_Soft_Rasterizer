@@ -107,3 +107,81 @@ gl::vec3 Texture2D::getTexelColor(float u, float v,LERP_MODE mode)
     return gl::vec3(0.0f);
 };
 
+TextureShadow::TextureShadow(uint width, uint height) : _width(width), _height(height)
+{
+    // initialize the texels
+    for (uint i = 0; i < _width; i++)
+    {
+        std::vector<float> row;
+        for (uint j = 0; j < _height; j++)
+        {
+            row.push_back(1.0f);
+        }
+        texels.push_back(row);
+    }
+};
+
+void TextureShadow::setTexelDepth(uint x, uint y, float depth)
+{   
+    assert(x >= 0 && x < _width);
+    assert(y >= 0 && y < _height);
+    texels[x][y] = depth;
+};
+
+float TextureShadow::getTexelDepth(float u,float v,LERP_MODE mode)
+{   
+    assert(u >= 0 && u < _width);
+    assert(v >= 0 && v < _height);
+
+    if(mode == LERP_MODE::NEAREST)
+    {
+        // get the texel coordinate
+        uint x = (uint)(u * _width);
+        uint y = (uint)(v * _height);
+
+        // clamp the texel coordinate
+        x = std::clamp(x, 0u, _width - 1);
+        y = std::clamp(y, 0u, _height - 1);
+
+        return texels[x][y];
+    }
+    else if(mode == LERP_MODE::BILINEAR)
+    {
+        // get the texel coordinate
+        uint x = (uint)(u * _width);
+        uint y = (uint)(v * _height);
+
+        // get the texel coordinate
+        float x1 = (u * _width) - x;
+        float y1 = (v * _height) - y;
+
+        x = std::clamp(x, 0u, _width - 2);
+        y = std::clamp(y, 0u, _height - 2);
+
+        // get the texel coordinate
+        float x2 = 1.0 - x1;
+        float y2 = 1.0 - y1;
+
+        // get the texel coordinate
+        float c1 = texels[x][y];
+        float c2 = texels[x+1][y];
+        float c3 = texels[x][y+1];
+        float c4 = texels[x+1][y+1];
+
+        // get the texel coordinate
+        float c12 = c1*x2 + c2*x1;
+        float c34 = c3*x2 + c4*x1;
+
+        // get the texel coordinate
+        float c1234 = c12*y2 + c34*y1;
+
+        return c1234;
+    }
+    else
+    {
+        throw std::runtime_error("Unsupported lerp mode");
+    }
+};
+
+
+

@@ -340,7 +340,7 @@ public:
 
                 gl::vec3 normal = gl::vec3(x_norm, y_norm, z_norm).normalize();
 
-                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg});
+                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg},{x_pos, y_pos, z_pos, 1.0f});
             }
         }
     };
@@ -369,7 +369,7 @@ public:
 
                 gl::vec3 normal = gl::vec3(x_norm, y_norm, z_norm).normalize();
 
-                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg});
+                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg}, {x_pos, y_pos, z_pos, 1.0f});
             }
         }
     };
@@ -414,7 +414,7 @@ public:
                 float y_norm = 0.0f;
                 float z_norm = 1.0f;
 
-                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {x_norm, y_norm, z_norm}, {u_seg, v_seg});
+                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {x_norm, y_norm, z_norm}, {u_seg, v_seg},{x_pos, y_pos, z_pos, 1.0f});
             }
         }
     };
@@ -441,7 +441,7 @@ public:
                 float y_norm = 0.0f;
                 float z_norm = 1.0f;
 
-                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {x_norm, y_norm, z_norm}, {u_seg, v_seg});
+                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, {x_norm, y_norm, z_norm}, {u_seg, v_seg},{x_pos, y_pos, z_pos,1.0f});
             }
         }
     };
@@ -488,7 +488,7 @@ public:
                 gl::vec3 du(-theta_max * (major_radius + radius) * sinf(theta), theta_max * (major_radius + radius) * cosf(theta), 0);
                 gl::vec3 dv(-cosf(theta) * sin(phi) * minor_radius * (phi_max - phi_min), -sinf(theta) * sin(phi) * minor_radius * (phi_max - phi_min), cos(phi) * minor_radius * (phi_max - phi_min));
                 gl::vec3 normal = gl::normalize(gl::cross(du, dv));
-                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg});
+                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg},{x_pos, y_pos, z_pos,1.0f});
             }
         }
     };
@@ -517,7 +517,7 @@ public:
                 gl::vec3 dv(-cosf(theta) * sin(phi) * minor_radius * (phi_max - phi_min), -sinf(theta) * sin(phi) * minor_radius * (phi_max - phi_min), cos(phi) * minor_radius * (phi_max - phi_min));
                 gl::vec3 normal = gl::normalize(gl::cross(du, dv));
 
-                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg});
+                _grids[x][y] = Vertex({x_pos, y_pos, z_pos}, normal, {u_seg, v_seg},{x_pos, y_pos, z_pos,1.0f});
             }
         }
     };

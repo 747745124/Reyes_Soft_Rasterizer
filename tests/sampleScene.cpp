@@ -77,7 +77,7 @@
 // 						RiTransformBegin();
 // 						RiTranslate(p1[0] + slopex * (i-1), p1[1] + slopey * (i-1), p1[2] + slopez * (i-1));
 // 						RiSphere(5, -5, 5, 360, RI_NULL);
-// 					RiTransformEnd();
+// 					    RiTransformEnd();
 // 				RiWorldEnd();
 
 // 			/* when you hit this command you should output the final image for this frame */

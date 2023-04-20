@@ -43,7 +43,7 @@ enum class buffer_type
     depth
 };
 
-//Default FrameBuffer
+// Default FrameBuffer
 class FrameBuffer
 {
 public:
@@ -52,17 +52,18 @@ public:
     // use sample buffer to set pixel color
     void setPixelColorFromBuffer();
     // use sample depth to set pixel color, visualizing z-buffer (per pixel make average)
-    void setPixelDepthFromBuffer(float znear,float zfar);
+    void setPixelDepthFromBuffer(float znear, float zfar);
     // set sample number
     void setSampleNumber(uint m, uint n);
     // initialize all sample buffers
     void initBuffers();
     //  set samples buffer,to ensure the same sample across all different framebuffers
-    void setSampleOffset(std::vector<gl::vec2> & offsets){
+    void setSampleOffset(std::vector<gl::vec2> &offsets)
+    {
         this->sample_offset = offsets;
     };
     // given a micropolygon, test it with the framebuffer, update buffers accordingly
-    void updateBufferByMicropolygon(Micropolygon &mp, gl::mat4 mvp,LERP_MODE mode = LERP_MODE::CORNER);
+    void updateBufferByMicropolygon(Micropolygon &mp, gl::mat4 mvp, LERP_MODE mode = LERP_MODE::CORNER);
 
     uint getSampleNumber() const
     {
@@ -97,8 +98,8 @@ public:
         }
     }
 
-    // reset all samples in the buffer to 0.0
-    void clearBuffer(float bg_depth, gl::vec4 bg_color);
+    // reset all samples in the buffer to depth to 1.0, color to 0.0
+    void clearBuffer(float bg_depth = 1.0, gl::vec4 bg_color = gl::vec4(0.0, 0.0, 0.0, 1.0));
 
     // the input should be 2 integers
     gl::vec3 getPixelColor(uint u, uint v) const
@@ -111,8 +112,6 @@ public:
     cv::Mat to_cv_mat(int FORMAT = CV_32FC3);
 
 private:
-    // 1st 2nd index for pixel, 3rd index for vector of samples
-    // std::vector<std::vector<std::vector<gl::vec2>>> _samples;
     std::vector<gl::vec2> sample_offset;
 
     // per pixel color buffer, all 0s by constructor default

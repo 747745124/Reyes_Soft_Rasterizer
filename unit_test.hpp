@@ -12,5 +12,6 @@
 #include "./base/texture.hpp"
 #include "./base/shader.hpp"
 #include "./base/light.hpp"
+#include "../base/SceneManager.hpp"
 #include "../utils/pattern.hpp"
 #include <opencv2/opencv.hpp>

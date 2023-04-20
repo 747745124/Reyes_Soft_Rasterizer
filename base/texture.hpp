@@ -30,13 +30,14 @@ private:
 class TextureShadow
 {
 public:
-	TextureShadow(uint width, uint height, int FORMAT);
+	TextureShadow(uint width, uint height);
 	~TextureShadow() = default;
-	void setTexelColor(float u, float v, gl::vec3 color, LERP_MODE mode = LERP_MODE::NEAREST);
-	gl::vec3 getTexelColor(float u, float v, LERP_MODE mode = LERP_MODE::NEAREST);
+	void setTexelDepth(uint u, uint v, float depth);
+	float getTexelDepth(float u, float v,LERP_MODE mode = LERP_MODE::NEAREST);
 
 private:
-	std::vector<std::vector<gl::vec3>> texels;
+	// 1st and 2nd index for texel
+	std::vector<std::vector<float>> texels;
 	uint _width;
 	uint _height;
 };
