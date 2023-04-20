@@ -22,7 +22,7 @@ Texture2D::Texture2D(const std::string path, int FORMAT = CV_32FC3) : _path(path
             std::vector<gl::vec3> row;
             for (uint i = 0; i < _height; i++)
             {
-                cv::Vec3f color = _image.at<cv::Vec3f>(i, j);
+                cv::Vec3f color = _image.at<cv::Vec3f>(_height - j - 1, i);
                 row.push_back(gl::vec3(color[2], color[1], color[0]));
             }
             texels.push_back(row);
@@ -36,7 +36,7 @@ Texture2D::Texture2D(const std::string path, int FORMAT = CV_32FC3) : _path(path
             std::vector<gl::vec3> row;
             for (uint i = 0; i < _height; i++)
             {
-                cv::Vec3b color = _image.at<cv::Vec3b>(i, j);
+                cv::Vec3b color = _image.at<cv::Vec3b>(_height - j - 1, i);
                 row.push_back(gl::vec3(color[0], color[1], color[2]));
             }
         }
@@ -191,7 +191,7 @@ cv::Mat TextureShadow::to_cv_mat()
         for (uint j = 0; j < _height; j++)
         {
             auto color = texels[i][j];
-            image.at<cv::Vec3f>(j, i) = cv::Vec3f(color, color, color);
+            image.at<cv::Vec3f>(_height - j - 1, i) = cv::Vec3f(color, color, color);
         }
     }
 
@@ -214,7 +214,7 @@ void TextureShadow::updateByMicropolygon(Micropolygon &mp, gl::mat4 lightmodel)
                 continue;
 
             // get the sample point
-            gl::vec2 sample_point = {(float)i+0.5f, (float)j+0.5f};
+            gl::vec2 sample_point = {(float)i + 0.5f, (float)j + 0.5f};
             // test if the sample point is inside the micropolygon
             bool is_inside = gl::is_inside_rect(sample_point, proj_mp_pos[0].xy(), proj_mp_pos[1].xy(), proj_mp_pos[2].xy(), proj_mp_pos[3].xy());
             if (!is_inside)
@@ -223,12 +223,11 @@ void TextureShadow::updateByMicropolygon(Micropolygon &mp, gl::mat4 lightmodel)
             // it's on a plane, so we can use the plane equation to get the depth
             Plane p(proj_mp_pos[0].xyz(), proj_mp_pos[1].xyz(), proj_mp_pos[2].xyz());
             // get the depth of the sample point
-            float sample_depth = p.get_z(sample_point.x(), sample_point.y())*0.5+0.5;
-
+            float sample_depth = p.get_z(sample_point.x(), sample_point.y()) * 0.5 + 0.5;
 
             if (isfinite(sample_depth) && sample_depth <= 1.0 && sample_depth >= 0.0)
             {
-                texels[i][j]= std::min(sample_depth, texels[i][j]);
+                texels[i][j] = std::min(sample_depth, texels[i][j]);
             }
         }
     }

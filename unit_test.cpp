@@ -1,10 +1,11 @@
 #include "./unit_test.hpp"
-// #define TEST_API
-// #define TEST_TEXTURE_SHADOW
+// #define CUSTOM_SCENE
+//  #define TEST_API
+//  #define TEST_TEXTURE_SHADOW
 // #define TEST_SCENE_MANAGER
 //  #define TEST_PRIMITIVE_NORMAL
 //  #define TEST_ZBUFFER_VIS
-#define TEST_PERLIN_DISPLACEMENT
+//  #define TEST_PERLIN_DISPLACEMENT
 //  #define TEST_PERLIN
 //  #define TEST_FILTER_CHECKER
 //  #define TEST_TEXTURE
@@ -15,12 +16,121 @@
 //  #define TEST_BILINEAR
 //  #define TEST_SAMPLING
 //  #define TEST_SAMPLE_VIS
-//  #define TEST_FRAMEBUFFER
+// #define TEST_FRAMEBUFFER
 //  #define TEST_MVP
 //  #define TEST_VEC
 
 int main()
 {
+
+#ifdef TEST_API
+    SceneManager scene;
+    scene.fovy = gl::to_radian(45.0f);
+    scene.znear = 0.1f;
+    scene.zfar = 100.0f;
+    scene.setWidth(400, 400);
+    scene.setSpp(1, 1);
+    scene.initCamera();
+    scene.initFramebuffer();
+#endif
+
+#ifdef TEST_SCENE_MANAGER
+    SceneManager scene;
+    scene.fovy = gl::to_radian(45.0f);
+    scene.znear = 0.1f;
+    scene.zfar = 50.0f;
+    scene.setWidth(800, 800);
+    scene.setSpp(4, 4);
+    scene.initCamera();
+    scene.initFramebuffer();
+    scene.initShadowSetting();
+    std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>(1.0, -1.0, 1.0, gl::to_radian(360.0f));
+    std::unique_ptr<Sphere> sphere2 = std::make_unique<Sphere>(1.0, -1.0, 1.0, gl::to_radian(360.0f));
+    std::unique_ptr<Sphere> sphere3 = std::make_unique<Sphere>(1.0, -1.0, 1.0, gl::to_radian(360.0f));
+    std::unique_ptr<Disk> disk = std::make_unique<Disk>(0.2, 10.f, gl::to_radian(360.0f));
+
+    Light light, light2;
+    PhongMaterial mat;
+    PBRMaterial pbr_mat;
+
+    {
+        pbr_mat.albedo = gl::vec3(0.5f); // actually it uses per vertex color as albedo
+        pbr_mat.roughness = 0.3f;
+        pbr_mat.metallic = 0.5f;
+        pbr_mat.ao = 1.0f;
+
+        gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
+        gl::Quat q2 = gl::Quat::fromAxisAngle(gl::vec3(1.0f, 0.0f, 0.0f), gl::to_radian(90.0f));
+        gl::Quat q3 = gl::Quat::fromAxisAngle(gl::vec3(1.0f, 0.0f, 0.0f), gl::to_radian(10.0f));
+
+        sphere->scale = gl::vec3(1.f);
+        sphere->position = gl::vec3(0.f, 0.0f, 8.0f);
+        sphere->rotation = q * sphere->rotation;
+
+        sphere2->scale = gl::vec3(1.f);
+        sphere2->position = gl::vec3(1.5f, 0.0f, 4.0f);
+        sphere2->rotation = q * sphere2->rotation;
+
+        sphere3->scale = gl::vec3(1.f);
+        sphere3->position = gl::vec3(-1.7f, 0.0f, 12.0f);
+        sphere3->rotation = q * sphere3->rotation;
+
+        disk->position = gl::vec3(0.0f, -0.3f, 10.0f);
+        disk->rotation = q2 * disk->rotation;
+    }
+
+    mat.ka = 0.3f;
+    mat.kd = gl::vec3(0.5f);
+    mat.ks = gl::vec3(0.5f);
+    mat.shininess = 32.0f;
+
+    light.position = gl::vec3(0.f, 0.f, 0.0f);
+    light.color = gl::vec3(1.0f, 1.0f, 1.0f);
+    light.intensity = 300.0f;
+    light2.position = gl::vec3(-2.f, -1.f, 4.0f);
+    light2.color = gl::vec3(0.0f, 0.0f, 0.0f);
+    light2.intensity = 400.0f;
+
+    scene.dice(*sphere);
+    scene.dice(*sphere2);
+    scene.dice(*sphere3);
+    scene.dice(*disk);
+
+    // non-lighting shader
+    gl::displacementPerlin(*sphere, 100U, 0.3f);
+    gl::displacementPerlin(*sphere2, 100U, 0.01f);
+    gl::displacementPerlin(*disk, 10U, 0.4f);
+    gl::setColor(*disk, gl::vec4(0.28, 0.38, 1.0f, 0.3f));
+
+    // finialize mesh,lighting shader starts
+    scene.addMesh(std::move(sphere));
+    scene.addMesh(std::move(sphere2));
+    scene.addMesh(std::move(sphere3));
+    scene.addMesh(std::move(disk));
+
+    // finalize light
+    scene.addLight(light);
+    scene.addLight(light2);
+    scene.generateDepthTex();
+    auto img = scene._shadow_tex.to_cv_mat();
+    cv::imshow("image", img);
+    cv::waitKey();
+
+    scene.clothShader(0, pbr_mat);
+    scene.clothShader(1, pbr_mat);
+    scene.clothShader(2, pbr_mat);
+    scene.blinnPhong(3, mat, false);
+
+    // scene.blinnPhong(0, mat, false);
+    // scene.blinnPhong(1, mat, false);
+    // scene.blinnPhong(2, mat, false);
+    // scene.blinnPhong(3, mat, false);
+
+    scene.drawMeshes();
+    scene.setPixelColorBuffer();
+    scene.showImage();
+#endif
+
 #ifdef TEST_TEXTURE_SHADOW
     TextureShadow tex(2000, 2000);
     OrthographicCamera shadow_cam(-10.f, 10.f, -10.f, 10.f, 0.1f, 50.f);
@@ -28,7 +138,7 @@ int main()
     FrameBuffer fb(400, 400, 2, 2);
 
     Light light;
-    light.position = gl::vec3(0., 0.f, 0.f);
+    light.position = gl::vec3(0.f, 0.f, 0.f);
     shadow_cam.position = light.position;
 
     Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f));
@@ -49,6 +159,10 @@ int main()
     gl::mat4 mvp2 = cam.getProjectionMat() * cam.getViewMat() * sphere2.getModelMat();
     tex.renderToTextureShadow(sphere, lightspace);
     tex.renderToTextureShadow(sphere2, lightspace);
+
+    auto tmp = tex.to_cv_mat();
+    cv::imshow("image", tmp);
+    cv::waitKey();
 
     {
         PhongMaterial mat;
@@ -89,100 +203,6 @@ int main()
     auto img = fb.to_cv_mat();
     cv::imshow("image", img);
     cv::waitKey();
-#endif
-
-#ifdef TEST_API
-    SceneManager scene;
-    scene.fovy = gl::to_radian(45.0f);
-    scene.znear = 0.1f;
-    scene.zfar = 100.0f;
-    scene.setWidth(400, 400);
-    scene.setSpp(1, 1);
-    scene.initCamera();
-    scene.initFramebuffer();
-
-#endif
-
-#ifdef TEST_SCENE_MANAGER
-    SceneManager scene;
-    scene.fovy = gl::to_radian(45.0f);
-    scene.znear = 0.1f;
-    scene.zfar = 50.0f;
-    scene.setWidth(400, 400);
-    scene.setSpp(4, 4);
-    scene.initCamera();
-    scene.initFramebuffer();
-    scene.initShadowSetting();
-    std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>(1.0, -1.0, 1.0, gl::to_radian(360.0f));
-    std::unique_ptr<Sphere> sphere2 = std::make_unique<Sphere>(1.0, -1.0, 1.0, gl::to_radian(360.0f));
-    std::unique_ptr<Sphere> sphere3 = std::make_unique<Sphere>(1.0, -1.0, 1.0, gl::to_radian(360.0f));
-    std::unique_ptr<Disk> disk = std::make_unique<Disk>(0.1, 10.f, gl::to_radian(360.0f));
-
-    Light light, light2;
-    PhongMaterial mat;
-
-    {
-        gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
-        gl::Quat q2 = gl::Quat::fromAxisAngle(gl::vec3(1.0f, 0.0f, 0.0f), gl::to_radian(60.0f));
-        gl::Quat q3 = gl::Quat::fromAxisAngle(gl::vec3(1.0f, 0.0f, 0.0f), gl::to_radian(10.0f));
-
-        sphere->scale = gl::vec3(1.f);
-        sphere->position = gl::vec3(0.f, 0.0f, 8.0f);
-        sphere->rotation = q * sphere->rotation;
-
-        sphere2->scale = gl::vec3(1.f);
-        sphere2->position = gl::vec3(1.5f, 0.0f, 4.0f);
-        sphere2->rotation = q * sphere2->rotation;
-
-        sphere3->scale = gl::vec3(1.f);
-        sphere3->position = gl::vec3(-1.7f, 0.0f, 12.0f);
-        sphere3->rotation = q * sphere3->rotation;
-
-        disk->position = gl::vec3(0.0f, 0.0f, 14.0f);
-    }
-
-    mat.ka = 0.2f;
-    mat.kd = gl::vec3(0.5f);
-    mat.ks = gl::vec3(0.5f);
-    mat.shininess = 32.0f;
-
-    light.position = gl::vec3(0.f, 0.f, 0.0f);
-    light.color = gl::vec3(1.0f, 1.0f, 1.0f);
-    light.intensity = 1.0f;
-    light2.position = gl::vec3(-2.f, -1.f, 4.0f);
-    light2.color = gl::vec3(0.0f, 0.0f, 0.0f);
-    light2.intensity = 2.0f;
-
-    scene.dice(*sphere);
-    scene.dice(*sphere2);
-    scene.dice(*sphere3);
-    scene.dice(*disk);
-
-    // non-lighting shader
-    gl::displacementPerlin(*sphere, 10U, 0.3f);
-
-    // finialize mesh,lighting shader starts
-    scene.addMesh(std::move(sphere));
-    scene.addMesh(std::move(sphere2));
-    scene.addMesh(std::move(sphere3));
-    scene.addMesh(std::move(disk));
-
-    // finalize light
-    scene.addLight(light);
-    scene.addLight(light2);
-    scene.generateDepthTex();
-    auto img = scene._shadow_tex.to_cv_mat();
-    cv::imshow("image", img);
-    cv::waitKey();
-
-    scene.blinnPhong(0, mat, false);
-    scene.blinnPhong(1, mat, false);
-    scene.blinnPhong(2, mat, false);
-    scene.blinnPhong(3, mat, false);
-
-    scene.drawMeshes();
-    scene.setPixelColorBuffer();
-    scene.showImage();
 #endif
 
 #ifdef TEST_PRIMITIVE_NORMAL
@@ -290,15 +310,16 @@ int main()
     cv::waitKey();
 #endif
 
+// 3 different shaders to play with
 #ifdef TEST_PERLIN_DISPLACEMENT
     Texture2D tex("../assets/textures/aki.jpeg", CV_32FC3);
-    uint width = 600;
-    uint height = 600;
+    uint width = 800;
+    uint height = 800;
 
     PerspectiveCamera p_cam(gl::to_radian(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 
     // MSAA 4x
-    FrameBuffer fb(width, height, 2, 2);
+    FrameBuffer fb(width, height, 4, 4);
     Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f));
 
     sphere.scale = gl::vec3(0.9f);
@@ -308,7 +329,7 @@ int main()
 
     gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
     auto span = sphere.getProjectedBoundingVolumeSpan(mvp, width, height);
-    sphere.dice((uint)span.x(), (uint)span.y(), 3.0f);
+    sphere.dice((uint)span.x(), (uint)span.y(), 10.0f);
 
     {
         PhongMaterial mat;
@@ -318,13 +339,13 @@ int main()
         mat.shininess = 32.0f;
 
         PBRMaterial pbr_mat;
-        pbr_mat.roughness = 0.01f;
+        pbr_mat.roughness = 0.2f;
         pbr_mat.metallic = 0.4f;
 
         Light light1, light2, light3, light4;
         light1.position = gl::vec3(-2.0f, -1.0f, 3.0f);
         light1.color = gl::vec3(1.0f);
-        light1.intensity = 120.0f;
+        light1.intensity = 200.0f;
         light2.position = gl::vec3(0.0f, 0.0f, 1.0f);
         light2.color = gl::vec3(1.0f, 1.0f, 1.0f);
         light2.intensity = 40.0f;
@@ -333,13 +354,13 @@ int main()
         light3.intensity = 40.0f;
         light4.position = gl::vec3(1.0f, 0.0f, 2.0f);
         light4.color = gl::vec3(1.0f, 1.0f, 1.0f);
-        light4.intensity = 100.0f;
+        light4.intensity = 200.0f;
 
-        gl::displacementPerlin(sphere, 100, 0.4f);
+        gl::displacementPerlin(sphere, 400, 0.4f);
         gl::setColor(sphere, gl::vec4(0.28, 0.38, 1.0f, 1.0f));
-        //gl::SimpleBRDFShader(sphere, std::vector<Light>{light1, light2, light3, light4}, pbr_mat, p_cam.position);
+        // gl::SimplePBRShader(sphere, std::vector<Light>{light1, light2, light3, light4}, pbr_mat, p_cam.position);
         gl::clothShader(sphere, std::vector<Light>{light1, light2, light3, light4}, pbr_mat, p_cam.position);
-         //gl::BlinnPhong(sphere, std::vector<Light>{light1, light2, light3, light4}, mat, p_cam.position);
+        // gl::BlinnPhong(sphere, std::vector<Light>{light1, light2, light3, light4}, mat, p_cam.position);
     }
 
     fb.clearColor();
@@ -378,7 +399,7 @@ int main()
         {
             float x = 8.f * (float)i / width;
             float y = 8.f * (float)j / height;
-            float noise = gl::fractal_perlin_2D(x, y, 4);
+            float noise = gl::fractal_perlin_2D({x, y}, 4);
             gl::vec3 color = gl::vec3(noise);
             fb.setPixelColor(i, j, color);
         }
@@ -401,7 +422,7 @@ int main()
     Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f));
 
     sphere.scale = gl::vec3(0.9f);
-    sphere.position = gl::vec3(0.0f, 0.0f, 6.0f);
+    sphere.position = gl::vec3(1.0f, 0.0f, 6.0f);
     gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(-90.0f));
     sphere.rotation = q * sphere.rotation;
 
@@ -904,39 +925,35 @@ int main()
 
 #ifdef TEST_FRAMEBUFFER
     {
-        Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f), 50, 50);
+        Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f), 20, 20);
         sphere.scale = gl::vec3(0.9f);
-        sphere.position = gl::vec3(0.0f, 0.0f, 4.0f);
+        sphere.position = gl::vec3(1.0f, 1.0f, 40.0f);
         gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(-90.0f));
         sphere.rotation = q * sphere.rotation;
         auto [w, h] = sphere.getResolution();
 
-        uint width = 800;
-        uint height = 800;
+        uint width = 600;
+        uint height = 600;
 
         PerspectiveCamera p_cam(gl::to_radian(45.0f), 1.0f, 0.1f, 100.0f);
         gl::mat4 mvp = p_cam.getProjectionMat() * p_cam.getViewMat() * sphere.getModelMat();
 
         int key = 0;
-        while (key != 27)
+        FrameBuffer fb(width, height);
+
+        for (int i = 0; i < w; i++)
         {
-            FrameBuffer fb(width, height);
-
-            for (int i = 0; i < w; i++)
+            for (int j = 0; j < h; j++)
             {
-                for (int j = 0; j < h; j++)
-                {
-                    auto v = sphere.getVertex(i, j);
-                    auto v_screen = gl::getScreenCoord(v.position, mvp, width, height);
-                    // setting up white color, no sampling
-                    fb.setPixelColor((int)v_screen.x(), (int)(v_screen.y()), gl::vec3(1.0f, 1.0f, 1.0f));
-                }
+                auto v = sphere.getVertex(i, j);
+                auto v_screen = gl::getScreenCoord(v.position, mvp, width, height);
+                fb.setPixelColor((int)v_screen.x(), (int)(v_screen.y()), gl::vec3(1.0f, 1.0f, 1.0f));
             }
-
-            auto img = fb.to_cv_mat();
-            cv::imshow("image", img);
-            auto key = cv::waitKey(1000);
         }
+
+        auto img = fb.to_cv_mat();
+        cv::imshow("image", img);
+        cv::waitKey();
     }
 #endif
 

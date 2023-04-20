@@ -67,7 +67,6 @@ namespace gl
     // -1  ～ 1 for x & y, but 0 ～ 1 for z
     static mat4 getPerspectiveMatLH(float fov, float aspect, float hither, float yon)
     {
-
         return mat4{
             1 / tan(fov / 2), 0, 0, 0,
             0, 1 / (aspect * tan(fov / 2)), 0, 0,
@@ -106,18 +105,17 @@ namespace gl
             0, 0, 0, 1};
     };
 
-
     // 3D view matrix given position, center (camera lookat position) and up vector
-    static mat4 getViewMat(vec3 position, vec3 center, vec3 up)
+    static mat4 getViewMat(vec3 eye, vec3 center, vec3 up)
     {
-        vec3 f = (center - position).normalize();
+        vec3 f = (center - eye).normalize();
         vec3 s = cross(up, f).normalize();
         vec3 u = cross(f, s);
         return mat4{
             s[0], u[0], f[0], 0,
             s[1], u[1], f[1], 0,
             s[2], u[2], f[2], 0,
-            -dot(s, position), -dot(u, position), -dot(f, position), 1};
+            -dot(s, eye), -dot(u, eye), -dot(f, eye), 1};
     };
 
     // 3D model matrix given position, rotation and scale

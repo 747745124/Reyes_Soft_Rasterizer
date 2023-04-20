@@ -73,7 +73,7 @@ void FrameBuffer::setPixelDepthFromBuffer(float znear, float zfar)
     for (uint i = 0; i < width; i++)
     {
         for (uint j = 0; j < height; j++)
-        {   
+        {
             float sample_depth_sum = 0.0f;
             for (uint k = 0; k < this->getSampleNumber(); k++)
             {
@@ -83,8 +83,8 @@ void FrameBuffer::setPixelDepthFromBuffer(float znear, float zfar)
                 sample_depth_sum += this->_buffers[i][j][k][0].depth;
             }
 
-            //linearize step
-            float pixel_depth = sample_depth_sum/(float)this->getSampleNumber();
+            // linearize step
+            float pixel_depth = sample_depth_sum / (float)this->getSampleNumber();
             float z = 2.0f * pixel_depth - 1.0f; // back to ndc
             float z_n = (2.0f * znear) / (zfar + znear - z * (zfar - znear));
             this->_pixel_color[i][j] = gl::vec3(z_n);
@@ -192,7 +192,7 @@ cv::Mat FrameBuffer::to_cv_mat(int FORMAT)
         for (uint j = 0; j < getHeight(); j++)
         {
             auto color = getPixelColor(i, j);
-            image.at<cv::Vec3f>(j, i) = cv::Vec3f(color.x(), color.y(), color.z());
+            image.at<cv::Vec3f>(getHeight() - j - 1, i) = cv::Vec3f(color.x(), color.y(), color.z());
         }
     }
 

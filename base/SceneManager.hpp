@@ -41,9 +41,18 @@ public:
             gl::BlinnPhong(mesh, _lights, material, _camera->position, &_shadow_tex, lightSpaceMatrix);
     }
 
-    void clothShader(Mesh &mesh, PBRMaterial &material)
+    void clothShader(int mesh_index, PBRMaterial &material)
     {
+        assert(mesh_index >= 0 && mesh_index < _meshes.size());
+        Mesh &mesh = *_meshes[mesh_index];
         gl::clothShader(mesh, _lights, material, _camera->position);
+    }
+
+    void SimplePBRShader(int mesh_index, PBRMaterial &material)
+    {
+        assert(mesh_index >= 0 && mesh_index < _meshes.size());
+        Mesh &mesh = *_meshes[mesh_index];
+        gl::SimplePBRShader(mesh, _lights, material, _camera->position);
     }
 
     void setSpp(uint x, uint y)

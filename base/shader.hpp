@@ -64,7 +64,7 @@ namespace gl
     }
 
     // assume point light, UE4 simplified version
-    static void SimpleBRDFShader(Mesh &mesh, std::vector<Light> lights, PBRMaterial material, gl::vec3 view_pos)
+    static void SimplePBRShader(Mesh &mesh, std::vector<Light> lights, PBRMaterial material, gl::vec3 view_pos)
     {
         using namespace gl;
         const auto [w, h] = mesh.getResolution();
