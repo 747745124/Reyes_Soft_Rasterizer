@@ -33,8 +33,7 @@ public:
     float top;
     float zNear;
     float zFar;
-
-public:
+    
     OrthographicCamera(float left, float right, float bottom, float top, float zNear, float zFar);
 
     ~OrthographicCamera() = default;

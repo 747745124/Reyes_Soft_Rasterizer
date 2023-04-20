@@ -32,16 +32,17 @@ private:
 class TextureShadow
 {
 public:
-	TextureShadow(uint width, uint height);
+	TextureShadow(uint width=2000, uint height=2000);
 	~TextureShadow() = default;
 	void setTexelDepth(uint u, uint v, float depth);
-	float getTexelDepth(float u, float v,LERP_MODE mode = LERP_MODE::NEAREST);
-	void renderToTextureShadow(Mesh& mesh,gl::mat4 lightmatrix);
-	void updateByMicropolygon(Micropolygon& mp,gl::mat4 lightmodel);
+	float getTexelDepth(float u, float v, LERP_MODE mode = LERP_MODE::NEAREST);
+	void renderToTextureShadow(Mesh &mesh, gl::mat4 lightmatrix);
+	void updateByMicropolygon(Micropolygon &mp, gl::mat4 lightmodel);
 	cv::Mat to_cv_mat();
+
 private:
 	// 1st and 2nd index for texel
 	std::vector<std::vector<float>> texels;
-	uint _width;
-	uint _height;
+	uint _width=2000;
+	uint _height=2000;
 };

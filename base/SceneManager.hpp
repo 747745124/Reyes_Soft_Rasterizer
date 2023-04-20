@@ -12,14 +12,18 @@
 class SceneManager
 {
 public:
+    SceneManager() = default;
     uint width = 400, height = 400;
     uint spp_x = 2, spp_y = 2;
-    float fovy = gl::to_radian(45), znear = 0.1, zfar = 100.0;
+    float fovy = gl::to_radian(45.f), znear = 0.1, zfar = 50.0f;
 
     std::shared_ptr<Camera> _camera;
+    std::unique_ptr<OrthographicCamera> _shadow_cam;
     std::unique_ptr<FrameBuffer> _framebuffer;
     std::vector<std::unique_ptr<Mesh>> _meshes;
     std::vector<Light> _lights;
+    TextureShadow _shadow_tex;
+    gl::mat4 lightSpaceMatrix;
 
     void setWidth(uint x, uint y)
     {
@@ -27,9 +31,14 @@ public:
         height = y;
     }
 
-    void blinnPhong(Mesh &mesh, PhongMaterial &material)
-    {
-        gl::BlinnPhong(mesh, _lights, material, _camera->position);
+    void blinnPhong(int mesh_index, PhongMaterial &material, bool enable_shadow = false)
+    {   
+        assert(mesh_index >= 0 && mesh_index < _meshes.size());
+        Mesh &mesh = *_meshes[mesh_index];
+        if (!enable_shadow)
+            gl::BlinnPhong(mesh, _lights, material, _camera->position);
+        else
+            gl::BlinnPhong(mesh, _lights, material, _camera->position, &_shadow_tex, lightSpaceMatrix);
     }
 
     void clothShader(Mesh &mesh, PBRMaterial &material)
@@ -46,6 +55,21 @@ public:
     void initCamera()
     {
         _camera = std::make_shared<PerspectiveCamera>(fovy, (float)width / (float)height, znear, zfar);
+    };
+
+    void initShadowSetting()
+    {
+        _shadow_tex = TextureShadow(2000, 2000);
+        _shadow_cam = std::make_unique<OrthographicCamera>(-10.0f * (float)width / (float)height, 10.0f * (float)width / (float)height, -10.0f, 10.0f, 0.1, 50.f);
+    }
+
+    void generateDepthTex()
+    {
+        // only use single light for now
+        assert(_lights.size() >= 1 && _meshes.size() >= 1);
+        this->lightSpaceMatrix = _shadow_cam->getProjectionMat() * gl::getViewMat(_lights[0].position, _meshes[0]->position, gl::vec3(0, 1, 0));
+        for (auto &mesh : _meshes)
+            _shadow_tex.renderToTextureShadow(*mesh, lightSpaceMatrix);
     };
 
     void initFramebuffer()
@@ -92,7 +116,7 @@ public:
         _meshes.push_back(std::move(mesh));
     }
 
-    void addLight(Light& light)
+    void addLight(Light &light)
     {
         _lights.push_back(light);
     }

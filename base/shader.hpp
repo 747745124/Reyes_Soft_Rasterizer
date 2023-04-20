@@ -138,7 +138,12 @@ namespace gl
         float closestDepth = shadow->getTexelDepth(projcoord.x(), projcoord.y());
         float currentDepth = projcoord.z();
 
-        float shadow_value = (currentDepth > closestDepth + 0.005) ? (1.0) : (0.0);
+        float shadow_value = 0.0;
+        
+        if(currentDepth > closestDepth + 0.005)
+            shadow_value = 1.0f;
+        else
+            shadow_value = 0.0f;
 
         if (projcoord.z() > 1.0)
             shadow_value = 0.0f;
