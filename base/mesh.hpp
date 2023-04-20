@@ -1,7 +1,6 @@
 #pragma once
 #include "./object3D.hpp"
 #include "./vertex.hpp"
-#include "./texture.hpp"
 
 class Mesh : public Object3D
 {

@@ -64,7 +64,7 @@ namespace gl
     }
 
     // assume point light, Ashikhmin 2007
-    static void clothShader(Mesh &mesh, std::vector<std::unique_ptr<Light>>& lights, PBRMaterial material, gl::vec3 view_pos)
+    static void clothShader(Mesh &mesh, std::vector<Light> &lights, PBRMaterial material, gl::vec3 view_pos)
     {
         const auto [w, h] = mesh.getResolution();
         for (int i = 0; i <= w; i++)
@@ -83,12 +83,12 @@ namespace gl
 
                 for (auto &light : lights)
                 {
-                    auto light_dir = normalize(light->position - vertex_pos.xyz());
+                    auto light_dir = normalize(light.position - vertex_pos.xyz());
                     auto halfway = normalize(view + light_dir);
-                    float dist = (light->position - vertex_pos.xyz()).length();
-                    float attenuation = light->intensity / pow(dist, 2.0f);
+                    float dist = (light.position - vertex_pos.xyz()).length();
+                    float attenuation = light.intensity / pow(dist, 2.0f);
 
-                    gl::vec3 radiance = light->color * attenuation;
+                    gl::vec3 radiance = light.color * attenuation;
                     float D = material.D_Ashikhmin(dot(normal, halfway));
                     gl::vec3 upper(D);
                     float NoL = std::max(dot(normal, light_dir), 0.0f);
@@ -130,8 +130,24 @@ namespace gl
         }
     }
 
+    float ShadowCalc(gl::vec4 fragPosLightSpace, TextureShadow *shadow)
+    {
+        using namespace gl;
+        vec3 projcoord = fragPosLightSpace.xyz() / fragPosLightSpace.w();
+        projcoord = projcoord * 0.5f + 0.5f;
+        float closestDepth = shadow->getTexelDepth(projcoord.x(), projcoord.y());
+        float currentDepth = projcoord.z();
+
+        float shadow_value = (currentDepth > closestDepth + 0.005) ? (1.0) : (0.0);
+
+        if (projcoord.z() > 1.0)
+            shadow_value = 0.0f;
+
+        return shadow_value;
+    }
+
     // note that in the primitive, all vertex position are local coord, so we need to transform them to world coord
-    static void BlinnPhong(Mesh &mesh, std::vector<std::unique_ptr<Light>>&lights, PhongMaterial material, gl::vec3 view_pos)
+    static void BlinnPhong(Mesh &mesh, std::vector<Light>& lights, PhongMaterial material, gl::vec3 view_pos, TextureShadow *shadow = nullptr, gl::mat4 lightSpaceMat = gl::mat4(1.0f))
     {
         const auto [w, h] = mesh.getResolution();
         for (int i = 0; i <= w; i++)
@@ -151,13 +167,20 @@ namespace gl
                 vec3 ambient = material.ka;
 
                 for (auto &light : lights)
-                {
-                    auto light_dir = (light->position - vertex_pos.xyz()).normalize();
-                    auto light_color = light->color;
+                {   
+                    float shadow_value = 0.f;
+                    if (shadow != nullptr)
+                    {
+                        auto vertex_pos_light = lightSpaceMat * vertex_pos;
+                        shadow_value = ShadowCalc(vertex_pos_light, shadow);
+                    }
+
+                    auto light_dir = (light.position - vertex_pos.xyz()).normalize();
+                    auto light_color = light.color;
                     auto diffuse = std::max(0.0f, dot(normal, light_dir));
                     auto specular = std::max(0.0f, dot(normalize(light_dir + view), normal));
                     specular = pow(specular, material.shininess);
-                    color += light->intensity * vertex_color.rgb() * light_color * (ambient + diffuse * material.kd + specular * material.ks);
+                    color += light.intensity * vertex_color.rgb() * light_color * (ambient + (1.0f-shadow_value)*(diffuse * material.kd + specular * material.ks));
                 }
 
                 vertex.baseColor = gl::vec4(color, vertex.baseColor.a());
@@ -218,4 +241,3 @@ Shader<Fn(Args...)> make_shader(Fn (*f)(Args...))
 {
     return Shader<Fn(Args...)>(std::function<Fn(Args...)>(f));
 }
-

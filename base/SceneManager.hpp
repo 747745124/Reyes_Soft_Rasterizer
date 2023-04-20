@@ -19,7 +19,7 @@ public:
     std::shared_ptr<Camera> _camera;
     std::unique_ptr<FrameBuffer> _framebuffer;
     std::vector<std::unique_ptr<Mesh>> _meshes;
-    std::vector<std::unique_ptr<Light>> _lights;
+    std::vector<Light> _lights;
 
     void setWidth(uint x, uint y)
     {
@@ -47,7 +47,6 @@ public:
     {
         _camera = std::make_shared<PerspectiveCamera>(fovy, (float)width / (float)height, znear, zfar);
     };
-
 
     void initFramebuffer()
     {
@@ -93,9 +92,9 @@ public:
         _meshes.push_back(std::move(mesh));
     }
 
-    void addLight(std::unique_ptr<Light> light)
+    void addLight(Light& light)
     {
-        _lights.push_back(std::move(light));
+        _lights.push_back(light);
     }
 
     gl::mat4 getMVP(Mesh &mesh)

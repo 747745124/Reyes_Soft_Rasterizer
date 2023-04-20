@@ -87,9 +87,7 @@ namespace gl
     };
 
     // 3D orthographic matrix given a left, right, bottom, top, near and far planes
-    // probably not used in this project
-    // since this one is for OpenGL style
-    static mat4 getOrthoMat(float left, float right, float bottom, float top, float zNear, float zFar)
+    static mat4 getOrthoMatRH(float left, float right, float bottom, float top, float zNear, float zFar)
     {
         return mat4{
             2 / (right - left), 0, 0, -(right + left) / (right - left),
@@ -97,6 +95,17 @@ namespace gl
             0, 0, -2 / (zFar - zNear), -(zFar + zNear) / (zFar - zNear),
             0, 0, 0, 1};
     };
+
+    //LH_ZO according to glm
+    static mat4 getOrthoMatLH(float left, float right, float bottom, float top, float zNear, float zFar)
+    {
+        return mat4{
+            2 / (right - left), 0, 0, -(right + left) / (right - left),
+            0, 2 / (top - bottom), 0, -(top + bottom) / (top - bottom),
+            0, 0, 1 / (zFar - zNear), -zNear / (zFar - zNear),
+            0, 0, 0, 1};
+    };
+
 
     // 3D view matrix given position, center (camera lookat position) and up vector
     static mat4 getViewMat(vec3 position, vec3 center, vec3 up)
@@ -132,6 +141,7 @@ namespace gl
         gl::vec4 clipCoord = mvp * gl::vec4(worldCoord, 1.0f);
         gl::vec4 ndcCoord = gl::vec4(clipCoord) / (clipCoord.w()+1e-6);
         gl::vec3 screenCoord = gl::vec3((ndcCoord[0] + 1.0f) / 2.0f * width, (ndcCoord[1] + 1.0f) / 2.0f * height, ndcCoord[2]);
+        // std::cout<<screenCoord<<std::endl;
         return screenCoord;
     }
 };

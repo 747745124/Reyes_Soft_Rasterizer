@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include "../utils/matrix.hpp"
+#include "../utils/utility.hpp"
+#include "./mesh.hpp"
 #include <opencv2/opencv.hpp>
 // TODO: Shadowmapping
 enum class LERP_MODE
@@ -34,7 +36,9 @@ public:
 	~TextureShadow() = default;
 	void setTexelDepth(uint u, uint v, float depth);
 	float getTexelDepth(float u, float v,LERP_MODE mode = LERP_MODE::NEAREST);
-
+	void renderToTextureShadow(Mesh& mesh,gl::mat4 lightmatrix);
+	void updateByMicropolygon(Micropolygon& mp,gl::mat4 lightmodel);
+	cv::Mat to_cv_mat();
 private:
 	// 1st and 2nd index for texel
 	std::vector<std::vector<float>> texels;

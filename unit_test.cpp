@@ -1,5 +1,6 @@
 #include "./unit_test.hpp"
-#define TEST_API
+// #define TEST_API
+#define TEST_TEXTURE_SHADOW
 //  #define TEST_SCENE_MANAGER
 //  #define TEST_PRIMITIVE_NORMAL
 //  #define TEST_ZBUFFER_VIS
@@ -20,6 +21,75 @@
 
 int main()
 {
+#ifdef TEST_TEXTURE_SHADOW
+    TextureShadow tex(2000, 2000);
+    OrthographicCamera shadow_cam(-10.f, 10.f, -10.f, 10.f, 0.1f, 50.f);
+    PerspectiveCamera cam(gl::to_radian(45.f), 1.0f, 0.1f, 50.0f);
+    FrameBuffer fb(400, 400, 2, 2);
+
+    Light light;
+    light.position = gl::vec3(0, 0.f, 0.f);
+    shadow_cam.position = light.position;
+
+    Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f));
+    gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
+    sphere.dice(100, 100, 2.f);
+    sphere.scale = gl::vec3(1.f);
+    sphere.position = gl::vec3(0, 0, 8.0f);
+    sphere.rotation = q*sphere.rotation;
+
+    Sphere sphere2(1.0, -1.0, 1.0, gl::to_radian(360.0f));
+    sphere2.dice(100, 100, 2.f);
+    sphere2.scale = gl::vec3(1.f);
+    sphere2.position = gl::vec3(1.5f, 0, 4.0f);
+    sphere2.rotation = q*sphere2.rotation;
+
+    gl::mat4 lightspace = shadow_cam.getProjectionMat() * gl::getViewMat(light.position, sphere.position, gl::vec3(0, 1, 0));
+    gl::mat4 mvp1 = cam.getProjectionMat() * cam.getViewMat() * sphere.getModelMat();
+    gl::mat4 mvp2 = cam.getProjectionMat() * cam.getViewMat() * sphere2.getModelMat();
+    tex.renderToTextureShadow(sphere, lightspace);
+    tex.renderToTextureShadow(sphere2, lightspace);
+
+    {
+        PhongMaterial mat;
+        mat.ka = 0.15f;
+        mat.kd = gl::vec3(0.5f);
+        mat.ks = gl::vec3(0.5f);
+        mat.shininess = 32.0f;
+        std::vector<Light> lights = {light};
+
+        gl::BlinnPhong(sphere, lights, mat, cam.position, &tex, lightspace);
+        gl::BlinnPhong(sphere2, lights, mat, cam.position, &tex, lightspace);
+    }
+
+    {
+        // loop over micropolygons of sphere
+        const auto [w, h] = sphere.getResolution();
+        for (int i = 0; i < w; i++)
+        {
+            for (int j = 0; j < h; j++)
+            {
+                auto mp = sphere.getMicropolygon(i, j);
+                fb.updateBufferByMicropolygon(mp, mvp1, LERP_MODE::CORNER);
+            }
+        }
+    }
+
+    const auto [w, h] = sphere2.getResolution();
+    for (int i = 0; i < w; i++)
+    {
+        for (int j = 0; j < h; j++)
+        {
+            auto mp = sphere2.getMicropolygon(i, j);
+            fb.updateBufferByMicropolygon(mp, mvp2, LERP_MODE::CORNER);
+        }
+    }
+
+    fb.setPixelColorFromBuffer();
+    auto img = fb.to_cv_mat();
+    cv::imshow("image", img);
+    cv::waitKey();
+#endif
 
 #ifdef TEST_API
     SceneManager scene;
@@ -30,8 +100,6 @@ int main()
     scene.setSpp(1, 1);
     scene.initCamera();
     scene.initFramebuffer();
-
-
 
 #endif
 
@@ -49,8 +117,8 @@ int main()
     std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>(1.0, -1.0, 1.0, gl::to_radian(360.0f));
     std::unique_ptr<Disk> disk = std::make_unique<Disk>(0.1, 10.f, gl::to_radian(360.0f));
 
-    std::unique_ptr<Light> light = std::make_unique<Light>();
-    std::unique_ptr<PhongMaterial> mat = std::make_unique<PhongMaterial>();
+    Light light;
+    PhongMaterial mat;
 
     {
         hyper->scale = gl::vec3(1.f);
@@ -67,22 +135,22 @@ int main()
         disk->rotation = q2 * disk->rotation;
     }
 
-    mat->ka = 0.2f;
-    mat->kd = gl::vec3(0.5f);
-    mat->ks = gl::vec3(0.5f);
-    mat->shininess = 32.0f;
+    mat.ka = 0.2f;
+    mat.kd = gl::vec3(0.5f);
+    mat.ks = gl::vec3(0.5f);
+    mat.shininess = 32.0f;
 
-    light->position = gl::vec3(-2.f, 2.f, 1.0f);
-    light->color = gl::vec3(1.0f, 1.0f, 1.0f);
+    light.position = gl::vec3(-2.f, 2.f, 1.0f);
+    light.color = gl::vec3(1.0f, 1.0f, 1.0f);
 
     scene.dice(*hyper);
     scene.dice(*sphere);
     scene.dice(*disk);
     // finalize light
-    scene.addLight(std::move(light));
-    scene.blinnPhong(*hyper, *mat);
-    scene.blinnPhong(*disk, *mat);
-    scene.blinnPhong(*sphere, *mat);
+    scene.addLight(light);
+    scene.blinnPhong(*hyper, mat);
+    scene.blinnPhong(*disk, mat);
+    scene.blinnPhong(*sphere, mat);
     gl::displacementPerlin(*sphere, 20u, 0.3f);
     gl::displacementPerlin(*disk, 20u, 0.3f);
 

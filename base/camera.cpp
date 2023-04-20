@@ -19,5 +19,5 @@ OrthographicCamera::OrthographicCamera(
 
 gl::mat4 OrthographicCamera::getProjectionMat() const
 {
-    return gl::getOrthoMat(left, right, bottom, top, zNear, zFar);
+    return gl::getOrthoMatLH(left, right, bottom, top, zNear, zFar);
 }

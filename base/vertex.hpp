@@ -44,7 +44,12 @@ struct Micropolygon
             min_y = std::min(min_y, pos.y());
             max_x = std::max(max_x, pos.x());
             max_y = std::max(max_y, pos.y());
-        }
+        }  
+
+        min_x = std::max(min_x,0.0f);
+        min_y = std::max(min_y,0.0f);
+        max_x = std::min(max_x,float(width));
+        max_y = std::min(max_y,float(height));
 
         return gl::vec4(min_x, max_x, min_y, max_y);
     }
