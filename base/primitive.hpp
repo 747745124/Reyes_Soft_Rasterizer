@@ -1,6 +1,5 @@
 #pragma once
 #include "./mesh.hpp"
-#include "../utils/Rheader.hpp"
 
 // Basic primitives that descibed in RISpec 3.2
 class Sphere : public Mesh

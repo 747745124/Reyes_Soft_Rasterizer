@@ -92,7 +92,7 @@ namespace gl
         return (y1+1.f)/2.f;
     };
 
-    float fractal_perlin_2D(gl::vec2 uv, int octaves){
+    static float fractal_perlin_2D(gl::vec2 uv, int octaves){
         float total = 0.f;
         float amp = 1.f;
         float freq = 1.f;

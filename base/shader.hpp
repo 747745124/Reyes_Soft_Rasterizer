@@ -30,7 +30,7 @@ namespace gl
         }
     }
 
-    float filtered_checkerboard(gl::vec2 uv, gl::vec2 du, gl::vec2 dv)
+    static float filtered_checkerboard(gl::vec2 uv, gl::vec2 du, gl::vec2 dv)
     {
         using namespace gl;
         vec2 kernel = max(abs(du), abs(dv));
@@ -40,7 +40,7 @@ namespace gl
         return 0.5f - 0.5f * ix * iy;
     }
 
-    float unfiltered_checkerboard(gl::vec2 uv)
+    static float unfiltered_checkerboard(gl::vec2 uv)
     {
         using namespace gl;
         float sx = sign(fract(uv.u() * 0.5f) - 0.5f);
@@ -181,7 +181,7 @@ namespace gl
         }
     }
 
-    float ShadowCalc(gl::vec4 fragPosLightSpace, TextureShadow *shadow)
+    static float ShadowCalc(gl::vec4 fragPosLightSpace, TextureShadow *shadow)
     {
         using namespace gl;
         vec3 projcoord = fragPosLightSpace.xyz() / fragPosLightSpace.w();

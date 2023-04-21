@@ -1,8 +1,8 @@
 #include "./unit_test.hpp"
 // #define CUSTOM_SCENE
-//  #define TEST_API
+ #define TEST_API
+//  #define TEST_SCENE_MANAGER
 //  #define TEST_TEXTURE_SHADOW
-// #define TEST_SCENE_MANAGER
 //  #define TEST_PRIMITIVE_NORMAL
 //  #define TEST_ZBUFFER_VIS
 //  #define TEST_PERLIN_DISPLACEMENT
@@ -16,7 +16,7 @@
 //  #define TEST_BILINEAR
 //  #define TEST_SAMPLING
 //  #define TEST_SAMPLE_VIS
-// #define TEST_FRAMEBUFFER
+//  #define TEST_FRAMEBUFFER
 //  #define TEST_MVP
 //  #define TEST_VEC
 
@@ -56,11 +56,11 @@ int main()
     {
         pbr_mat.albedo = gl::vec3(0.5f); // actually it uses per vertex color as albedo
         pbr_mat.roughness = 0.3f;
-        pbr_mat.metallic = 0.5f;
-        pbr_mat.ao = 1.0f;
+        pbr_mat.metallic = 0.4f;
+        pbr_mat.ao = 0.4f;
 
         gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
-        gl::Quat q2 = gl::Quat::fromAxisAngle(gl::vec3(1.0f, 0.0f, 0.0f), gl::to_radian(90.0f));
+        gl::Quat q2 = gl::Quat::fromAxisAngle(gl::vec3(1.0f, 0.0f, 0.0f), gl::to_radian(-90.0f));
         gl::Quat q3 = gl::Quat::fromAxisAngle(gl::vec3(1.0f, 0.0f, 0.0f), gl::to_radian(10.0f));
 
         sphere->scale = gl::vec3(1.f);
@@ -72,7 +72,7 @@ int main()
         sphere2->rotation = q * sphere2->rotation;
 
         sphere3->scale = gl::vec3(1.f);
-        sphere3->position = gl::vec3(-1.7f, 0.0f, 12.0f);
+        sphere3->position = gl::vec3(-2.7f, 0.0f, 12.0f);
         sphere3->rotation = q * sphere3->rotation;
 
         disk->position = gl::vec3(0.0f, -0.3f, 10.0f);
@@ -84,11 +84,11 @@ int main()
     mat.ks = gl::vec3(0.5f);
     mat.shininess = 32.0f;
 
-    light.position = gl::vec3(0.f, 0.f, 0.0f);
+    light.position = gl::vec3(0.f, 3.f, 0.0f);
     light.color = gl::vec3(1.0f, 1.0f, 1.0f);
-    light.intensity = 300.0f;
-    light2.position = gl::vec3(-2.f, -1.f, 4.0f);
-    light2.color = gl::vec3(0.0f, 0.0f, 0.0f);
+    light.intensity = 400.0f;
+    light2.position = gl::vec3(0.f, 3.f, 5.0f);
+    light2.color = gl::vec3(1.0f, 1.0f, 1.0f);
     light2.intensity = 400.0f;
 
     scene.dice(*sphere);
@@ -98,9 +98,13 @@ int main()
 
     // non-lighting shader
     gl::displacementPerlin(*sphere, 100U, 0.3f);
-    gl::displacementPerlin(*sphere2, 100U, 0.01f);
-    gl::displacementPerlin(*disk, 10U, 0.4f);
+    gl::displacementPerlin(*sphere2, 100U, 0.03f);
+    gl::displacementPerlin(*disk, 10U, -0.4f);
     gl::setColor(*disk, gl::vec4(0.28, 0.38, 1.0f, 0.3f));
+    gl::setColor(*sphere, gl::vec4(0.2, 0.3, 0.7f, 1.0f));
+    gl::setColor(*sphere2, gl::vec4(0.2, 0.4, 0.2f, 1.0f));
+    gl::setColor(*sphere3, gl::vec4(0.9, 0.9, 1.0f, 1.0f));
+   
 
     // finialize mesh,lighting shader starts
     scene.addMesh(std::move(sphere));
@@ -119,7 +123,10 @@ int main()
     scene.clothShader(0, pbr_mat);
     scene.clothShader(1, pbr_mat);
     scene.clothShader(2, pbr_mat);
-    scene.blinnPhong(3, mat, false);
+    scene.SimplePBRShader(3, pbr_mat);
+    // scene.clothShader(3, pbr_mat);
+    // scene.blinnPhong(3, mat, false);
+
 
     // scene.blinnPhong(0, mat, false);
     // scene.blinnPhong(1, mat, false);

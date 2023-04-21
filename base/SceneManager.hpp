@@ -1,5 +1,8 @@
 #pragma once
 #include <memory>
+#include <any>
+#include <stack>
+#include <cstdarg>
 #include "./camera.hpp"
 #include "./framebuffer.hpp"
 #include "./mesh.hpp"
@@ -7,15 +10,23 @@
 #include "./texture.hpp"
 #include "./shader.hpp"
 #include "./light.hpp"
-#include <any>
+
+
+enum class CAM_TYPE{
+    PERSPECTIVE,
+    ORTHOGRAPHIC
+};
 
 class SceneManager
 {
 public:
     SceneManager() = default;
+    ~SceneManager() = default;
     uint width = 400, height = 400;
     uint spp_x = 2, spp_y = 2;
     float fovy = gl::to_radian(45.f), znear = 0.1, zfar = 50.0f;
+    CAM_TYPE cam_type = CAM_TYPE::PERSPECTIVE;
+    Object3D root; std::stack<gl::mat4> _trans;
 
     std::shared_ptr<Camera> _camera;
     std::unique_ptr<OrthographicCamera> _shadow_cam;
@@ -25,10 +36,26 @@ public:
     TextureShadow _shadow_tex;
     gl::mat4 lightSpaceMatrix;
 
+    void setCAM_TYPE(CAM_TYPE type)
+    {
+        cam_type = type;
+    }
+
     void setWidth(uint x, uint y)
     {
         width = x;
         height = y;
+    }
+
+    void setFov(float fov)
+    {
+        fovy = fov;
+    }
+    
+    void setClippingPlane(float near, float far)
+    {
+        znear = near;
+        zfar = far;
     }
 
     void blinnPhong(int mesh_index, PhongMaterial &material, bool enable_shadow = false)
@@ -61,9 +88,12 @@ public:
         spp_y = y;
     }
 
-    void initCamera()
+    void initCamera(CAM_TYPE type = CAM_TYPE::PERSPECTIVE)
     {
-        _camera = std::make_shared<PerspectiveCamera>(fovy, (float)width / (float)height, znear, zfar);
+        if(type == CAM_TYPE::PERSPECTIVE)
+            _camera = std::make_shared<PerspectiveCamera>(fovy, (float)width / (float)height, znear, zfar);
+        else
+            _camera = std::make_shared<OrthographicCamera>(-30.0f * (float)width / (float)height, 30.0f * (float)width / (float)height, -30.0f, 30.0f, 0.1, 50.f);
     };
 
     void initShadowSetting()
