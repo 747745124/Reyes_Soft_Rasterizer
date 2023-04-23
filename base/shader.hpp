@@ -5,7 +5,8 @@
 #include "../utils/utility.hpp"
 #include "../utils/pattern.hpp"
 namespace gl
-{
+{   
+    
     static void setOpacity(Mesh &mesh, float opacity)
     {
         const auto [w, h] = mesh.getResolution();
