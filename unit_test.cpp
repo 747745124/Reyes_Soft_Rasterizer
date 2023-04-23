@@ -1,7 +1,7 @@
 #include "./unit_test.hpp"
 // #define CUSTOM_SCENE
- #define TEST_API
-//  #define TEST_SCENE_MANAGER
+//  #define TEST_API
+#define TEST_SCENE_MANAGER
 //  #define TEST_TEXTURE_SHADOW
 //  #define TEST_PRIMITIVE_NORMAL
 //  #define TEST_ZBUFFER_VIS
@@ -44,14 +44,19 @@ int main()
     scene.initCamera();
     scene.initFramebuffer();
     scene.initShadowSetting();
-    std::unique_ptr<Sphere> sphere = std::make_unique<Sphere>(1.0, -1.0, 1.0, gl::to_radian(360.0f));
-    std::unique_ptr<Sphere> sphere2 = std::make_unique<Sphere>(1.0, -1.0, 1.0, gl::to_radian(360.0f));
-    std::unique_ptr<Sphere> sphere3 = std::make_unique<Sphere>(1.0, -1.0, 1.0, gl::to_radian(360.0f));
-    std::unique_ptr<Disk> disk = std::make_unique<Disk>(0.2, 10.f, gl::to_radian(360.0f));
+    std::unique_ptr<Sphere> base = std::make_unique<Sphere>(1.5, -1.5, 1.5, gl::to_radian(360.0f));
+    std::unique_ptr<Sphere> body = std::make_unique<Sphere>(0.8, -0.8, 0.8, gl::to_radian(360.0f));
+    std::unique_ptr<Sphere> face = std::make_unique<Sphere>(0.5, -0.5, 0.5, gl::to_radian(360.0f));
+    std::unique_ptr<Sphere> left_eye = std::make_unique<Sphere>(0.1, -0.1, 0.1, gl::to_radian(360.0f));
+    std::unique_ptr<Sphere> right_eye = std::make_unique<Sphere>(0.1, -0.1, 0.1, gl::to_radian(360.0f));
+    std::unique_ptr<Cylinder> hat = std::make_unique<Cylinder>(0.4, 0.f, 0.5, gl::to_radian(360.0f));
+    std::unique_ptr<Disk> hat_base = std::make_unique<Disk>(0.2, 0.9f, gl::to_radian(360.0f));
+    std::unique_ptr<Disk> bg = std::make_unique<Disk>(0.2, 1.5f, gl::to_radian(360.0f));
 
     Light light, light2;
     PhongMaterial mat;
     PBRMaterial pbr_mat;
+    PBRMaterial hat_mat;
 
     {
         pbr_mat.albedo = gl::vec3(0.5f); // actually it uses per vertex color as albedo
@@ -59,24 +64,38 @@ int main()
         pbr_mat.metallic = 0.4f;
         pbr_mat.ao = 0.4f;
 
+        hat_mat.albedo = gl::vec3(0.9f); // actually it uses per vertex color as albedo
+        hat_mat.roughness = 0.4f;
+        hat_mat.metallic = 0.8f;
+        hat_mat.ao = 0.1f;
+
         gl::Quat q = gl::Quat::fromAxisAngle(gl::vec3(0.0f, 1.0f, 0.0f), gl::to_radian(90.0f));
         gl::Quat q2 = gl::Quat::fromAxisAngle(gl::vec3(1.0f, 0.0f, 0.0f), gl::to_radian(-90.0f));
         gl::Quat q3 = gl::Quat::fromAxisAngle(gl::vec3(1.0f, 0.0f, 0.0f), gl::to_radian(10.0f));
 
-        sphere->scale = gl::vec3(1.f);
-        sphere->position = gl::vec3(0.f, 0.0f, 8.0f);
-        sphere->rotation = q * sphere->rotation;
+        base->scale = gl::vec3(1.f);
+        base->position = gl::vec3(0.f, -2.0f, 8.0f);
+        base->rotation = q * base->rotation;
 
-        sphere2->scale = gl::vec3(1.f);
-        sphere2->position = gl::vec3(1.5f, 0.0f, 4.0f);
-        sphere2->rotation = q * sphere2->rotation;
+        body->scale = gl::vec3(1.f);
+        body->position = gl::vec3(0.f, 0.0f, 8.0f);
+        body->rotation = q * body->rotation;
 
-        sphere3->scale = gl::vec3(1.f);
-        sphere3->position = gl::vec3(-2.7f, 0.0f, 12.0f);
-        sphere3->rotation = q * sphere3->rotation;
+        face->scale = gl::vec3(1.f);
+        face->position = gl::vec3(0.f, 1.0f, 8.0f);
+        face->rotation = q * face->rotation;
 
-        disk->position = gl::vec3(0.0f, -0.3f, 10.0f);
-        disk->rotation = q2 * disk->rotation;
+        hat->position = gl::vec3(0.0f, 0.8f, 8.0f);
+        hat->rotation = q2 * hat->rotation;
+
+        bg->position = gl::vec3(0.0f, 0.8f, 8.0f);
+        hat_base->position = gl::vec3(0.0, 0.6f, 8.0f);
+        hat_base->rotation = q2 * hat_base->rotation;
+
+        left_eye->scale = gl::vec3(1.5f);
+        right_eye->scale = gl::vec3(1.5f);
+        left_eye->position = gl::vec3(-0.3f, 0.3f, 7.0f);
+        right_eye->position = gl::vec3(-0.3f, 0.3f, 7.0f);
     }
 
     mat.ka = 0.3f;
@@ -91,47 +110,51 @@ int main()
     light2.color = gl::vec3(1.0f, 1.0f, 1.0f);
     light2.intensity = 400.0f;
 
-    scene.dice(*sphere);
-    scene.dice(*sphere2);
-    scene.dice(*sphere3);
-    scene.dice(*disk);
+    scene.dice(*base);
+    scene.dice(*body);
+    scene.dice(*face);
+    scene.dice(*hat);
+    scene.dice(*bg);
+    scene.dice(*hat_base);
+    scene.dice(*left_eye);
+    scene.dice(*right_eye);
 
     // non-lighting shader
-    gl::displacementPerlin(*sphere, 100U, 0.3f);
-    gl::displacementPerlin(*sphere2, 100U, 0.03f);
-    gl::displacementPerlin(*disk, 10U, -0.4f);
-    gl::setColor(*disk, gl::vec4(0.28, 0.38, 1.0f, 0.3f));
-    gl::setColor(*sphere, gl::vec4(0.2, 0.3, 0.7f, 1.0f));
-    gl::setColor(*sphere2, gl::vec4(0.2, 0.4, 0.2f, 1.0f));
-    gl::setColor(*sphere3, gl::vec4(0.9, 0.9, 1.0f, 1.0f));
-   
+    gl::displacementPerlin(*base, 400U, 0.2f);
+    gl::displacementPerlin(*body, 100U, 0.2f);
+    gl::displacementPerlin(*face, 100U, 0.2f);
+    gl::setColor(*base, gl::vec4(0.28, 0.38, 1.0f, 0.3f));
+    gl::setColor(*body, gl::vec4(0.2, 0.3, 0.7f, 1.0f));
+    gl::setColor(*face, gl::vec4(0.2, 0.4, 0.2f, 1.0f));
+    gl::setColor(*hat, gl::vec4(0.05, 0.05, 0.05f, 1.0f));
+    gl::setColor(*bg, gl::vec4(0.95, 0.23, 0.05f, 1.0f));
+    gl::setColor(*hat_base, gl::vec4(0.05, 0.05, 0.05f, 1.0f));
+    gl::setColor(*left_eye, gl::vec4(0.65, 0.05, 0.05f, 1.0f));
+    gl::setColor(*right_eye, gl::vec4(0.65, 0.05, 0.05f, 1.0f));
 
     // finialize mesh,lighting shader starts
-    scene.addMesh(std::move(sphere));
-    scene.addMesh(std::move(sphere2));
-    scene.addMesh(std::move(sphere3));
-    scene.addMesh(std::move(disk));
+    scene.addMesh(std::move(base));
+    scene.addMesh(std::move(body));
+    // scene.addMesh(std::move(face));
+    scene.addMesh(std::move(hat));
+    scene.addMesh(std::move(bg));
+    scene.addMesh(std::move(hat_base));
+    scene.addMesh(std::move(left_eye));
+    scene.addMesh(std::move(right_eye));
 
     // finalize light
     scene.addLight(light);
     scene.addLight(light2);
-    scene.generateDepthTex();
-    auto img = scene._shadow_tex.to_cv_mat();
-    cv::imshow("image", img);
-    cv::waitKey();
+    // scene.generateDepthTex();
+    // auto img = scene._shadow_tex.to_cv_mat();
+    // cv::imshow("image", img);
+    // cv::waitKey();
 
     scene.clothShader(0, pbr_mat);
     scene.clothShader(1, pbr_mat);
-    scene.clothShader(2, pbr_mat);
-    scene.SimplePBRShader(3, pbr_mat);
-    // scene.clothShader(3, pbr_mat);
-    // scene.blinnPhong(3, mat, false);
+    scene.SimplePBRShader(2, hat_mat);
+    scene.SimplePBRShader(4, hat_mat);
 
-
-    // scene.blinnPhong(0, mat, false);
-    // scene.blinnPhong(1, mat, false);
-    // scene.blinnPhong(2, mat, false);
-    // scene.blinnPhong(3, mat, false);
 
     scene.drawMeshes();
     scene.setPixelColorBuffer();
@@ -140,12 +163,13 @@ int main()
 
 #ifdef TEST_TEXTURE_SHADOW
     TextureShadow tex(2000, 2000);
-    OrthographicCamera shadow_cam(-10.f, 10.f, -10.f, 10.f, 0.1f, 50.f);
+    // OrthographicCamera shadow_cam(-10.f, 10.f, -10.f, 10.f, 0.1f, 50.f);
+    PerspectiveCamera shadow_cam(gl::to_radian(45.f), 1.0f, 7.f, 9.0f);
     PerspectiveCamera cam(gl::to_radian(45.f), 1.0f, 0.1f, 50.0f);
     FrameBuffer fb(400, 400, 2, 2);
 
     Light light;
-    light.position = gl::vec3(0.f, 0.f, 0.f);
+    light.position = gl::vec3(0.f, 0.0f, 0.f);
     shadow_cam.position = light.position;
 
     Sphere sphere(1.0, -1.0, 1.0, gl::to_radian(360.0f));
@@ -161,11 +185,11 @@ int main()
     sphere2.position = gl::vec3(1.5f, 0, 4.0f);
     sphere2.rotation = q * sphere2.rotation;
 
-    gl::mat4 lightspace = shadow_cam.getProjectionMat() * gl::getViewMat(light.position, gl::vec3(0, 0, 15.f), gl::vec3(0, 1, 0));
+    gl::mat4 lightspace = shadow_cam.getProjectionMat() * gl::getViewMat(light.position, gl::vec3(0, 0, 8.f), gl::vec3(0, 1, 0));
     gl::mat4 mvp1 = cam.getProjectionMat() * cam.getViewMat() * sphere.getModelMat();
     gl::mat4 mvp2 = cam.getProjectionMat() * cam.getViewMat() * sphere2.getModelMat();
     tex.renderToTextureShadow(sphere, lightspace);
-    tex.renderToTextureShadow(sphere2, lightspace);
+    // tex.renderToTextureShadow(sphere2, lightspace);
 
     auto tmp = tex.to_cv_mat();
     cv::imshow("image", tmp);
@@ -450,7 +474,7 @@ int main()
         light2.position = gl::vec3(20.0f, 1.0f, 5.0f);
         light2.color = gl::vec3(1.0f, 0.0f, 1.0f);
 
-        gl::checkerBoard(sphere, 10);
+        gl::checkerBoard(sphere, 80);
         gl::displacement(sphere, 1.0f);
         gl::BlinnPhong(sphere, std::vector<Light>{light1, light2}, mat, p_cam.position);
     }
