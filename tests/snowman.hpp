@@ -1,9 +1,11 @@
+#pragma once
 #include "../utils/Rheader.hpp"
-using namespace gl;
 
 //this one uses custom API
 //Another Ri-like version is provided in a separate file
+//"snowman_ri.cpp"
 void snowman(){
+    using namespace gl;
     SceneManager scene;
     scene.fovy = gl::to_radian(45.0f);
     scene.znear = 0.1f;
@@ -185,7 +187,3 @@ void snowman(){
     scene.setPixelColorBuffer();
     scene.showImage();
 };
-
-int main(){
-    snowman();
-}

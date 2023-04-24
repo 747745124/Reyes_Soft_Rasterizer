@@ -1,9 +1,9 @@
-#include "./utils/Rheader.hpp"
-using namespace gl;
-
+#pragma once
+#include "../utils/Rheader.hpp"
 
 void Tornado()
-{
+{	
+	using namespace gl;
 	RiBegin(RI_NULL);
 		//RiFormat(960, 720, 1.0);
 		RiFormat(400, 300, 1.0);
@@ -38,8 +38,3 @@ void Tornado()
 
 	RiEnd();
 };
-
-int main()
-{
-    Tornado();
-}

@@ -1,13 +1,14 @@
-#include "./utils/Rheader.hpp"
-using namespace gl;
+#include "../utils/Rheader.hpp"
+
 /********************************************/
 /********************************************/
 void Tunnel()
-{
+{	
+	using namespace gl;
 	RiBegin(RI_NULL);
 		//RiFormat(960, 720, 1.0);
-		RiFormat(960, 720, 1.0);
-		RiDisplay("../Tunnel.png", "file", "");
+		RiFormat(800, 800, 1.0);
+		RiDisplay("../Tunnel.png", "", "");
 		RiPixelSamples(2,2);
 		
 		RiFrameBegin(0);
@@ -17,6 +18,7 @@ void Tunnel()
 			//RiProjection(RI_ORTHOGRAPHIC);
 
 			RiWorldBegin();
+				RiPhongMaterial(vec3(0.2),0.2,vec3(0.4),vec3(0.9),32);
 				RiTransformBegin();
 					RtColor color = {1,0,0};
 					RiColor(color);
@@ -58,9 +60,4 @@ void Tunnel()
 		RiFrameEnd();
 
 	RiEnd();
-}
-
-int main()
-{
-    Tunnel();
 }

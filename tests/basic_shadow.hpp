@@ -1,10 +1,12 @@
+#pragma once
 #include "../utils/Rheader.hpp"
-using namespace gl;
+
 
 //A shadowmapping example
 //uses custom API
 void Basic_Shadow()
-{
+{   
+    using namespace gl;
     SceneManager scene;
     scene.setSpp(2, 2);
     scene.fovy = gl::to_radian(45.0f);
@@ -45,9 +47,4 @@ void Basic_Shadow()
     scene.drawMesh(std::make_unique<Sphere>(sphere2));
     scene.setPixelColorBuffer();
     scene.showImage();
-}
-
-int main()
-{
-    Basic_Shadow();
 }

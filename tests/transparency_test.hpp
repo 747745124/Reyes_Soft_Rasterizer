@@ -1,13 +1,15 @@
-#include "./utils/Rheader.hpp"
-using namespace gl;
+#pragma once
+#include "../utils/Rheader.hpp"
+
 
 void TransparencyTest()
 {
+	using namespace gl;
 	RiBegin(RI_NULL);
 		//RiFormat(960, 720, 1.0);
 		RiFormat(400, 400, 1.0);
 		//RiFormat(200, 150, 1.0);
-		RiDisplay("../transparency_test.png", "file", "");
+		RiDisplay("../transparency_test.png", "", "");
 		RiPixelSamples(2,2);
 		
 		RiFrameBegin(0);
@@ -65,8 +67,3 @@ void TransparencyTest()
 
 	RiEnd();
 };
-
-int main()
-{
-    TransparencyTest();
-}

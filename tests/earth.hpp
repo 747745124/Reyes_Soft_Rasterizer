@@ -1,8 +1,9 @@
+#pragma once
 #include "../utils/Rheader.hpp"
-using namespace gl;
 
 void Earth()
-{
+{   
+    using namespace gl;
 	RiBegin(RI_NULL);
 		//RiFormat(960, 720, 1.0);
 		RiFormat(600, 600, 1.0);
@@ -38,6 +39,3 @@ void Earth()
 	RiEnd();
 }
 
-int main(){
-    Earth();
-}

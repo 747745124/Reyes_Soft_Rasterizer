@@ -1,0 +1,9 @@
+#pragma once
+#include "./tests/transparency_test.hpp"
+#include "./tests/earth.hpp"
+#include "./tests/snowman.hpp"
+#include "./tests/snowman_Ri.hpp"
+#include "./tests/shader_test.hpp"
+#include "./tests/tornado.hpp"
+#include "./tests/tunnel.hpp"
+#include "./tests/basic_shadow.hpp"

@@ -1,16 +1,16 @@
-#include "./utils/Rheader.hpp"
-using namespace gl;
-
+#pragma once
+#include "../utils/Rheader.hpp"
 
 /********************************************/
 /********************************************/
 void ShaderTest()
-{
+{	
+	using namespace gl;
 	RiBegin(RI_NULL);
 		//RiFormat(960, 720, 1.0);
 		RiFormat(800, 800, 1.0);
 		//RiFormat(200, 150, 1.0);
-		RiDisplay("ShaderTest.png", "file", "");
+		RiDisplay("ShaderTest.png", "", "");
 		RiPixelSamples(2,2);
 		
 		RiFrameBegin(0);
@@ -20,6 +20,7 @@ void ShaderTest()
 			//RiProjection(RI_ORTHOGRAPHIC);
 
 			RiWorldBegin();
+				RiAddLight(vec3(0.5,0.5,6.0),vec3(1.0f),100.f);
 				RiTransformBegin();
 					RtColor color = {1,0,0};
 					RtColor opacity = {.4,.4,.4};
@@ -80,9 +81,4 @@ void ShaderTest()
 			RiWorldEnd();
 		RiFrameEnd();
 	RiEnd();
-}
-
-int main()
-{
-    ShaderTest();
 }
