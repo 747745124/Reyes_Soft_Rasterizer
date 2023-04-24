@@ -6,8 +6,8 @@ void Tunnel()
 {	
 	using namespace gl;
 	RiBegin(RI_NULL);
-		//RiFormat(960, 720, 1.0);
 		RiFormat(800, 800, 1.0);
+		//Change output here
 		RiDisplay("../Tunnel.png", "", "");
 		RiPixelSamples(2,2);
 		

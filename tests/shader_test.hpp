@@ -7,9 +7,8 @@ void ShaderTest()
 {	
 	using namespace gl;
 	RiBegin(RI_NULL);
-		//RiFormat(960, 720, 1.0);
 		RiFormat(800, 800, 1.0);
-		//RiFormat(200, 150, 1.0);
+		//Change output here
 		RiDisplay("ShaderTest.png", "", "");
 		RiPixelSamples(2,2);
 		
@@ -17,7 +16,6 @@ void ShaderTest()
 			/* set the perspective transformation */
 			float fov = 45.0;
 			RiProjection(RI_PERSPECTIVE, "fov", &fov);
-			//RiProjection(RI_ORTHOGRAPHIC);
 
 			RiWorldBegin();
 				RiAddLight(vec3(0.5,0.5,6.0),vec3(1.0f),100.f);

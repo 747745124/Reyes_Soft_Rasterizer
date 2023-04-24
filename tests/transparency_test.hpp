@@ -6,9 +6,8 @@ void TransparencyTest()
 {
 	using namespace gl;
 	RiBegin(RI_NULL);
-		//RiFormat(960, 720, 1.0);
 		RiFormat(400, 400, 1.0);
-		//RiFormat(200, 150, 1.0);
+		//Change output here
 		RiDisplay("../transparency_test.png", "", "");
 		RiPixelSamples(2,2);
 		

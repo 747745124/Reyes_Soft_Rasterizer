@@ -5,9 +5,8 @@ void Earth()
 {   
     using namespace gl;
 	RiBegin(RI_NULL);
-		//RiFormat(960, 720, 1.0);
 		RiFormat(600, 600, 1.0);
-		//RiFormat(200, 150, 1.0);
+		//Change output here
 		RiDisplay("Earth.png", "", "");
 		RiPixelSamples(4,4);
 		

@@ -13,7 +13,8 @@ void snowman_ri()
     RtColor red = {0.68, 0.137, 0.16};
 
     RiBegin(RI_NULL);
-    RiFormat(1000, 1000, 1.0);
+    RiFormat(800, 800, 1.0);
+    //Change output here
     RiDisplay("../Snowman.png", "", "rgb");
     RiPixelSamples(4, 4);
     RiDiceCoeff(6.0f);
