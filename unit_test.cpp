@@ -1,6 +1,6 @@
 #include "./unit_test.hpp"
 //  #define TEST_API
- #define TEST_SCENE_MANAGER
+//  #define TEST_SCENE_MANAGER
 //  #define TEST_TEXTURE_SHADOW
 //  #define TEST_PRIMITIVE_NORMAL
 //  #define TEST_ZBUFFER_VIS

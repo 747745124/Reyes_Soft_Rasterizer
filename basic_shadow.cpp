@@ -1,6 +1,8 @@
 #include "../utils/Rheader.hpp"
 using namespace gl;
 
+//A shadowmapping example
+//uses custom API
 void Basic_Shadow()
 {
     SceneManager scene;
@@ -36,7 +38,7 @@ void Basic_Shadow()
     scene.addMesh(std::make_unique<Sphere>(sphere2));
 
     scene.generateDepthTex();
-    
+
     scene.context.setIlluminationType(ILLUMINATION_TYPE::PHONG_SHADOW);
     scene.context.setColor(gl::vec4(0.28, 0.38, 1.0f, 1.0f));
     scene.drawMesh(std::make_unique<Sphere>(sphere));

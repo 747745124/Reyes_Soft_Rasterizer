@@ -10,7 +10,7 @@ find_package(OpenCV REQUIRED)
 set(BASE ./base/object3D.cpp ./base/camera.cpp ./base/framebuffer.cpp ./base/primitive.cpp ./base/texture.cpp ./base/light.cpp)
 
 # Add main.cpp file of project root directory as source files
-set(SOURCE_FILES ./tunnel.cpp)
+set(SOURCE_FILES ./snowman_Ri.cpp)
 
 # Add executable target with source files listed in SOURCE_FILES variable
 add_executable(TESTS ${SOURCE_FILES} ${BASE})

@@ -1,9 +1,10 @@
 #include "../utils/Rheader.hpp"
 using namespace gl;
 
+//this one uses custom API
+//Another Ri-like version is provided in a separate file
 void snowman(){
     SceneManager scene;
-    Texture2D tex("../assets/textures/earth.jpg");
     scene.fovy = gl::to_radian(45.0f);
     scene.znear = 0.1f;
     scene.zfar = 50.0f;
@@ -27,8 +28,6 @@ void snowman(){
     std::unique_ptr<Disk> hat_base = std::make_unique<Disk>(0.2, 0.9f, gl::to_radian(360.0f));
     std::unique_ptr<Disk> bg = std::make_unique<Disk>(0.2, 2.3f, gl::to_radian(360.0f));
     std::unique_ptr<Cylinder> scarf = std::make_unique<Cylinder>(0.68, 0.0f, 0.1, gl::to_radian(360.0f));
-    std::unique_ptr<Cylinder> left_hand = std::make_unique<Cylinder>(0.05, 0.0f, 1.5, gl::to_radian(360.0f));
-    std::unique_ptr<Cylinder> right_hand = std::make_unique<Cylinder>(0.05, 0.0f, 1.5, gl::to_radian(360.0f));
 
     Light light, light2, light3;
     PhongMaterial mat;

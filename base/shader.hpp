@@ -328,24 +328,3 @@ namespace gl
     };
 
 };
-
-template <class>
-struct Shader;
-
-template <class Fn, class... Args>
-struct Shader<Fn(Args...)>
-{
-public:
-    Shader(std::function<Fn(Args...)> func) : f_(func) {}
-    std::function<Fn(Args...)> f_;
-    void operator()(Args... args)
-    {
-        f_(args...);
-    }
-};
-
-template <class Fn, class... Args>
-Shader<Fn(Args...)> make_shader(Fn (*f)(Args...))
-{
-    return Shader<Fn(Args...)>(std::function<Fn(Args...)>(f));
-}

@@ -113,6 +113,36 @@ namespace gl
         _scene_manager->drawMesh(std::move(_));
     }
 
+    static void RiDisk(RtFloat height, RtFloat radius, RtFloat thetamax, ...)
+    {
+        auto _ = std::make_unique<Disk>(height, radius, to_radian(thetamax));
+        _->position = _scene_manager->root.position;
+        _->rotation = _scene_manager->root.rotation;
+        _->scale = _scene_manager->root.scale;
+        _scene_manager->dice(*_);
+        _scene_manager->drawMesh(std::move(_));
+    }
+
+    static void RiParaboloid(RtFloat rmax, RtFloat zmin, RtFloat zmax, RtFloat thetamax, ...)
+    {
+        auto _ = std::make_unique<Paraboloid>(rmax, zmin, zmax, to_radian(thetamax));
+        _->position = _scene_manager->root.position;
+        _->rotation = _scene_manager->root.rotation;
+        _->scale = _scene_manager->root.scale;
+        _scene_manager->dice(*_);
+        _scene_manager->drawMesh(std::move(_));
+    }
+
+    static void RiHyperboloid(RtPoint p1, RtPoint p2, RtFloat thetamax, ...)
+    {
+        auto _ = std::make_unique<Hyperboloid>(p1, p2, to_radian(thetamax));
+        _->position = _scene_manager->root.position;
+        _->rotation = _scene_manager->root.rotation;
+        _->scale = _scene_manager->root.scale;
+        _scene_manager->dice(*_);
+        _scene_manager->drawMesh(std::move(_));
+    }
+
     static void RiDisplacement(DISPLACEMENT_TYPE type, uint tile, float scale)
     {
         _scene_manager->context.setDisplacementType(type);
@@ -170,6 +200,11 @@ namespace gl
         _scene_manager->context.color.b() = color.z();
     };
 
+    static void RiDiceCoeff(float coeff = 4.0f)
+    {
+        _scene_manager->setDicingFactor(coeff);
+    }
+
     static void RiIlluminate(ILLUMINATION_TYPE type)
     {
         _scene_manager->context.setIlluminationType(type);
@@ -223,7 +258,7 @@ namespace gl
 
             if (strcmp(type, "file") == 0)
                 _scene_manager->display_method = DISPLAY_METHOD::FILE;
-            else 
+            else
                 _scene_manager->display_method = DISPLAY_METHOD::IMMEDIATE;
 
             if (strcmp(mode, "rgb") == 0)
@@ -232,7 +267,7 @@ namespace gl
                 _scene_manager->setTarget(RENDERING_TARGET::DEPTH);
             else if (strcmp(mode, "shadow") == 0)
                 _scene_manager->setTarget(RENDERING_TARGET::SHADOW);
-            else if(strcmp(mode, "") == 0)
+            else if (strcmp(mode, "") == 0)
                 _scene_manager->setTarget(RENDERING_TARGET::COLOR);
 
             // assert(false && "Unknown mode in RiDisplay");
@@ -268,6 +303,20 @@ namespace gl
         assert(_scene_manager->_shadow_cam != nullptr && "Shadow setting is not initialized");
     }
 
+    static void RiAddLight(vec3 position, vec3 color, float intensity)
+    {
+        Light light;
+        light.position = position;
+        light.color = color;
+        light.intensity = intensity;
+        _scene_manager->addLight(light);
+    }
+
+    static void RiClearLight()
+    {
+        _scene_manager->_lights.clear();
+    };
+
     static void RiEnd()
     {
         _scene_manager = nullptr;
@@ -279,7 +328,8 @@ namespace gl
     }
 
     static void RiTransformEnd()
-    {
+    {   
+        assert(_scene_manager->_stack.size() > 0 && "Stack is empty");
         _scene_manager->root = _scene_manager->_stack.top();
         _scene_manager->_stack.pop();
     }

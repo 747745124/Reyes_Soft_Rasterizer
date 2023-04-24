@@ -35,7 +35,8 @@ enum class ILLUMINATION_TYPE
     PHONG,
     PHONG_SHADOW,
     CLOTH,
-    PBR
+    PBR,
+    NONE
 };
 
 enum class SURFACE_TYPE
@@ -223,6 +224,8 @@ public:
             break;
         case ILLUMINATION_TYPE::PBR:
             gl::SimplePBRShader(mesh, _lights, context.pbr_material, _camera->position);
+            break;
+        case ILLUMINATION_TYPE::NONE:
             break;
         }
     }
