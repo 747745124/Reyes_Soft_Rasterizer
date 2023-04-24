@@ -14,4 +14,5 @@
 #include "./base/light.hpp"
 #include "../base/SceneManager.hpp"
 #include "../utils/pattern.hpp"
+#include "../utils/Rheader.hpp"
 #include <opencv2/opencv.hpp>

@@ -86,7 +86,7 @@ public:
     };
 
     // reset all pixel color to 0.0
-    void clearColor()
+    void clearColor(float color=0.0f)
     {
         // set all pixel color to 0.0
         for (uint i = 0; i < width; i++)

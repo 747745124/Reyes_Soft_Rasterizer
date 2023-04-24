@@ -32,7 +32,7 @@ public:
     };
 
     // Dice happens before the mesh actually initialize the grid
-    virtual void dice(uint x_span_pix,uint y_span_pix, float factor=2.0)=0;
+    virtual void dice(uint x_span_pix,uint y_span_pix, float factor=4.0)=0;
     
     // Given a bounding volume, calculate the projected span (in pixel) of the mesh on screen 
     gl::vec2 getProjectedBoundingVolumeSpan(const gl::mat4& mvp,uint width, uint height){

@@ -69,7 +69,7 @@ void FrameBuffer::setPixelColorFromBuffer()
 // it's more like a dump depth buffer to pixel color
 void FrameBuffer::setPixelDepthFromBuffer(float znear, float zfar)
 {
-    clearColor();
+    clearColor(1.0f);
     for (uint i = 0; i < width; i++)
     {
         for (uint j = 0; j < height; j++)

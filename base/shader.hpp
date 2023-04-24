@@ -4,9 +4,11 @@
 #include "./material.hpp"
 #include "../utils/utility.hpp"
 #include "../utils/pattern.hpp"
+// shader per mesh & per vertex
+// per mesh design might not be ideal, but it's easier to implement
+// (since you don't have to pass model matrix for illumination calculation)
 namespace gl
-{   
-    
+{
     static void setOpacity(Mesh &mesh, float opacity)
     {
         const auto [w, h] = mesh.getResolution();
@@ -17,6 +19,11 @@ namespace gl
                 mesh.setVertex(i, j).baseColor.a() = opacity;
             }
         }
+    }
+
+    static void setOpacity(Vertex &v, float opacity)
+    {
+        v.baseColor.a() = opacity;
     }
 
     static void setColor(Mesh &mesh, gl::vec4 color)
@@ -31,7 +38,12 @@ namespace gl
         }
     }
 
-    static float filtered_checkerboard(gl::vec2 uv, gl::vec2 du, gl::vec2 dv)
+    static void setColor(Vertex &v, gl::vec4 color)
+    {
+        v.baseColor = color;
+    }
+
+    float filtered_checkerboard(gl::vec2 uv, gl::vec2 du, gl::vec2 dv)
     {
         using namespace gl;
         vec2 kernel = max(abs(du), abs(dv));
@@ -41,7 +53,7 @@ namespace gl
         return 0.5f - 0.5f * ix * iy;
     }
 
-    static float unfiltered_checkerboard(gl::vec2 uv)
+    float unfiltered_checkerboard(gl::vec2 uv)
     {
         using namespace gl;
         float sx = sign(fract(uv.u() * 0.5f) - 0.5f);
@@ -49,9 +61,10 @@ namespace gl
         return .5f - .5f * sx * sy;
     }
 
-    static void checkerBoard(Mesh &mesh, uint step_size = 10, uint filter_coeff = 4)
+    static void checkerBoard(Mesh &mesh, uint step_size = 10, float filter_coeff = 0.1)
     {
         const auto [w, h] = mesh.getResolution();
+        auto opacity = mesh.getVertex(0, 0).baseColor.a();
         for (int i = 0; i <= w; i++)
         {
             for (int j = 0; j <= h; j++)
@@ -59,9 +72,17 @@ namespace gl
                 float u = (float)i / (float)w;
                 float v = (float)j / (float)h;
                 float checker = filtered_checkerboard(gl::vec2(u, v) * step_size, gl::vec2((float)(step_size)*filter_coeff / (float)w, 0.0f), gl::vec2(0.0f, (float)(step_size)*filter_coeff / (float)h));
-                mesh.setVertexColor(i, j, gl::vec4(vec3(checker), 1.0f));
+                mesh.setVertexColor(i, j, gl::vec4(vec3(checker), opacity));
             }
         }
+    }
+
+    static void checkerBoard(Vertex &vertex, uint step_size = 10, uint filter_coeff = 1)
+    {
+        float u = vertex.texCoords.u();
+        float v = vertex.texCoords.v();
+        float checker = filtered_checkerboard(gl::vec2(u, v) * step_size, gl::vec2((float)(step_size)*filter_coeff, 0.0f), gl::vec2(0.0f, (float)(step_size)*filter_coeff));
+        vertex.baseColor = gl::vec4(vec3(checker), 1.0f);
     }
 
     // assume point light, UE4 simplified version
@@ -147,7 +168,7 @@ namespace gl
                     float NoV = std::max(dot(normal, view), 0.0f);
                     float lower = 4.0f * (NoL + NoV - (NoL * NoV)) + 0.0001f;
                     gl::vec3 BRDF = upper / lower;
-                    color += vec3(0.03f) * material.albedo * material.ao+radiance * BRDF * NoL * vertex_color.rgb();
+                    color += vec3(0.03f) * material.albedo * material.ao + radiance * BRDF * NoL * vertex_color.rgb();
                 }
 
                 vertex.baseColor = gl::vec4(color, vertex.baseColor.a());
@@ -155,7 +176,7 @@ namespace gl
         }
     };
 
-    static void simpleTextureMapping(Mesh &mesh, Texture2D &tex, LERP_MODE mode = LERP_MODE::BILINEAR)
+    static void simpleTextureMapping(Mesh &mesh, Texture2D tex, LERP_MODE mode = LERP_MODE::BILINEAR)
     {
         const auto [w, h] = mesh.getResolution();
         for (int i = 0; i <= w; i++)
@@ -182,7 +203,7 @@ namespace gl
         }
     }
 
-    static float ShadowCalc(gl::vec4 fragPosLightSpace, TextureShadow *shadow)
+    float ShadowCalc(gl::vec4 fragPosLightSpace, TextureShadow *shadow)
     {
         using namespace gl;
         vec3 projcoord = fragPosLightSpace.xyz() / fragPosLightSpace.w();
@@ -255,7 +276,8 @@ namespace gl
             for (int j = 0; j <= h; j++)
             {
                 auto &vertex = mesh.setVertex(i, j);
-                vertex.position += vertex.normal * bumpy_scale;
+                auto normal = (mesh.getModelMat().inverse().transpose() * vec4(vertex.normal, 0.0f)).xyz().normalize();
+                vertex.position += normal * bumpy_scale;
             }
         }
     };
@@ -272,9 +294,19 @@ namespace gl
                 u *= tile;
                 v *= tile;
                 auto &vertex = mesh.setVertex(i, j);
-                vertex.position += vertex.normal * gl::perlin_noise_2D(vec2(u, v)) * scale;
+                auto normal = (mesh.getModelMat().inverse().transpose() * vec4(vertex.normal, 0.0f)).xyz().normalize();
+                vertex.position += normal * gl::perlin_noise_2D(vec2(u, v)) * scale;
             }
         }
+    };
+
+    static void displacementPerlin(Vertex &vertex, uint tile = 20, float scale = 0.2f)
+    {
+        float u = vertex.texCoords.u();
+        float v = vertex.texCoords.v();
+        u *= tile;
+        v *= tile;
+        vertex.position += vertex.normal * gl::perlin_noise_2D(vec2(u, v)) * scale;
     };
 
     static void displacementFractalPerlin(Mesh &mesh, uint tile = 20, float scale = 0.2f, uint octaves = 4)
@@ -289,7 +321,8 @@ namespace gl
                 u *= tile;
                 v *= tile;
                 auto &vertex = mesh.setVertex(i, j);
-                vertex.position += vertex.normal * gl::fractal_perlin_2D(vec2(u, v), octaves) * scale;
+                auto normal = (mesh.getModelMat().inverse().transpose() * vec4(vertex.normal, 0.0f)).xyz().normalize();
+                vertex.position += normal * gl::fractal_perlin_2D(vec2(u, v), octaves) * scale;
             }
         }
     };

@@ -4,7 +4,11 @@
 class Light : public Object3D
 {
 public:
-    Light(){};
+    Light(){
+        position = gl::vec3(0.f, 3.f, 7.0f);
+        color = gl::vec3(1.0f, 1.0f, 1.0f);
+        intensity = 400.0f;
+    };
     Light(const gl::vec3 &position, const gl::vec3 &color, float intensity)
     {
         this->color = {1.0f, 1.0f, 1.0f};

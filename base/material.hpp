@@ -3,22 +3,20 @@
 
 struct PhongMaterial
 {
-    gl::vec3 albedo = gl::vec3(1.0f);
-    float ka = 0.3f;
-    gl::vec3 kd = gl::vec3(0.5f);
-    gl::vec3 ks = gl::vec3(0.5f);
-    ;
+    gl::vec3 albedo = gl::vec3(0.4f);
+    float ka = 0.4f;
+    gl::vec3 kd = gl::vec3(0.2f);
+    gl::vec3 ks = gl::vec3(0.6f);
     float shininess = 32.f;
-
     PhongMaterial() = default;
 };
 
 struct PBRMaterial
 {
-    gl::vec3 albedo = gl::vec3(1.0f);
-    float metallic = 0.0f;
+    gl::vec3 albedo = gl::vec3(0.5f);
+    float metallic = 0.3f;
     float roughness = 0.3f;
-    float ao = 0.5f;
+    float ao = 0.4f;
 
     PBRMaterial() = default;
     float GGX(float NdotH) const
@@ -104,3 +102,5 @@ struct PBRMaterial
         return normalize(sample_vec);
     };
 };
+
+

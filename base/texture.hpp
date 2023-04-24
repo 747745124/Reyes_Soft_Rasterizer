@@ -4,7 +4,7 @@
 #include "../utils/utility.hpp"
 #include "./mesh.hpp"
 #include <opencv2/opencv.hpp>
-// TODO: Shadowmapping
+
 enum class LERP_MODE
 {
 	NEAREST,
@@ -15,12 +15,12 @@ enum class LERP_MODE
 class Texture2D
 {
 public:
-	Texture2D(const std::string path, int FORMAT);
+	Texture2D(const std::string path, int FORMAT = CV_32FC3);
 	~Texture2D() = default;
 
 	// get the texel color, get to the nearest texel
 	// bilinear interpolation is in progress
-	gl::vec3 getTexelColor(float u, float v, LERP_MODE mode = LERP_MODE::NEAREST);
+	gl::vec3 getTexelColor(float u, float v, LERP_MODE mode = LERP_MODE::BILINEAR);
 
 private:
 	std::string _path;

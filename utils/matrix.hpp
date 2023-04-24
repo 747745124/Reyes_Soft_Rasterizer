@@ -75,7 +75,7 @@ namespace gl
             return data[1];
         }
 
-        //below accessor are pass by value
+        // below accessor are pass by value
         vec<2, T> xy()
         {
             assert(data.size() >= 2);
@@ -187,11 +187,11 @@ namespace gl
         }
 
         // divide equal
-        vec<N, T>& operator/=(const float divisor)
+        vec<N, T> &operator/=(const float divisor)
         {
             for (int i = 0; i < N; i++)
             {
-                this->data[i]/=divisor;
+                this->data[i] /= divisor;
             }
             return *this;
         }
@@ -242,16 +242,15 @@ namespace gl
         }
 
         // add equal
-        vec<N, T>& operator+=(vec<N, T> other)
+        vec<N, T> &operator+=(vec<N, T> other)
         {
             for (int i = 0; i < N; i++)
             {
-                this->data[i]+=other[i];
+                this->data[i] += other[i];
             }
 
             return *this;
         }
-
 
     private:
         std::array<T, N> data;
@@ -347,19 +346,19 @@ namespace gl
         return result;
     }
 
-        //color multiplication
+    // color multiplication
     template <int N, class T>
-    vec<N, T> operator*(const vec<N, T> &lhs, const vec<N, T>&rhs)
-    {   
+    vec<N, T> operator*(const vec<N, T> &lhs, const vec<N, T> &rhs)
+    {
         vec<N, T> result;
         for (int i = 0; i < N; i++)
         {
             result[i] = lhs[i] * rhs[i];
         }
 
-        return result; 
+        return result;
     }
-    
+
     template <int N, class T>
     vec<N, T> operator*(const float multiplier, const vec<N, T> &rhs)
     {
@@ -637,7 +636,11 @@ namespace gl
             T det = determinant();
 
             if (det == 0)
-                throw std::runtime_error("matrix is not invertible");
+            {
+                // std::cout << "matrix is not invertible" << std::endl;
+                return mat<M, N, T>(1.0f);
+                // throw std::runtime_error("matrix is not invertible");
+            }
 
             // inverse of the matrix
             if (M == 1)

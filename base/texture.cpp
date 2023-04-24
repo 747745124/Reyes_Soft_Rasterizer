@@ -1,6 +1,6 @@
 #include "./texture.hpp"
 // Probably TODO: mipmap & tri-linear interpolation
-Texture2D::Texture2D(const std::string path, int FORMAT = CV_32FC3) : _path(path)
+Texture2D::Texture2D(const std::string path, int FORMAT) : _path(path)
 {
     // read image from given path
     auto _image = cv::imread(_path.c_str(), cv::IMREAD_COLOR);
@@ -22,7 +22,7 @@ Texture2D::Texture2D(const std::string path, int FORMAT = CV_32FC3) : _path(path
             std::vector<gl::vec3> row;
             for (uint i = 0; i < _height; i++)
             {
-                cv::Vec3f color = _image.at<cv::Vec3f>(_height - j - 1, i);
+                cv::Vec3f color = _image.at<cv::Vec3f>(j, i);
                 row.push_back(gl::vec3(color[2], color[1], color[0]));
             }
             texels.push_back(row);
@@ -36,7 +36,7 @@ Texture2D::Texture2D(const std::string path, int FORMAT = CV_32FC3) : _path(path
             std::vector<gl::vec3> row;
             for (uint i = 0; i < _height; i++)
             {
-                cv::Vec3b color = _image.at<cv::Vec3b>(_height - j - 1, i);
+                cv::Vec3b color = _image.at<cv::Vec3b>(j, i);
                 row.push_back(gl::vec3(color[0], color[1], color[2]));
             }
         }
