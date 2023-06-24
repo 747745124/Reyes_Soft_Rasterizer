@@ -15,9 +15,6 @@ int main(){
     // auto earth_test = make_decorator(Earth);
     // earth_test();
 
-    // auto snowman_test = make_decorator(snowman);
-    // snowman_test();
-
     auto snowman_Ri_test = make_decorator(snowman_ri);
     snowman_Ri_test();
 

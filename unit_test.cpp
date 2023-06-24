@@ -51,6 +51,7 @@ int main()
     scene.initCamera();
     scene.initFramebuffer();
     scene.initShadowSetting();
+    scene._lights.clear();
     std::unique_ptr<Sphere> base = std::make_unique<Sphere>(1.5, -1.5, 1.5, gl::to_radian(360.0f));
     std::unique_ptr<Sphere> body = std::make_unique<Sphere>(0.8, -0.8, 0.8, gl::to_radian(360.0f));
     std::unique_ptr<Sphere> face = std::make_unique<Sphere>(0.5, -0.5, 0.5, gl::to_radian(360.0f));
@@ -226,8 +227,8 @@ int main()
 
 #ifdef TEST_TEXTURE_SHADOW
     TextureShadow tex(2000, 2000);
-    // OrthographicCamera shadow_cam(-10.f, 10.f, -10.f, 10.f, 0.1f, 50.f);
-    PerspectiveCamera shadow_cam(gl::to_radian(45.f), 1.0f, 7.f, 9.0f);
+    OrthographicCamera shadow_cam(-10.f, 10.f, -10.f, 10.f, 0.1f, 50.f);
+    // PerspectiveCamera shadow_cam(gl::to_radian(45.f), 1.0f, 7.f, 9.0f);
     PerspectiveCamera cam(gl::to_radian(45.f), 1.0f, 0.1f, 50.0f);
     FrameBuffer fb(400, 400, 2, 2);
 
@@ -248,11 +249,11 @@ int main()
     sphere2.position = gl::vec3(1.5f, 0, 4.0f);
     sphere2.rotation = q * sphere2.rotation;
 
-    gl::mat4 lightspace = shadow_cam.getProjectionMat() * gl::getViewMat(light.position, gl::vec3(0, 0, 8.f), gl::vec3(0, 1, 0));
+    gl::mat4 lightspace = shadow_cam.getProjectionMat() * gl::getViewMat(light.position, gl::vec3(0, 0, 10.f), gl::vec3(0, 1, 0));
     gl::mat4 mvp1 = cam.getProjectionMat() * cam.getViewMat() * sphere.getModelMat();
     gl::mat4 mvp2 = cam.getProjectionMat() * cam.getViewMat() * sphere2.getModelMat();
     tex.renderToTextureShadow(sphere, lightspace);
-    // tex.renderToTextureShadow(sphere2, lightspace);
+    tex.renderToTextureShadow(sphere2, lightspace);
 
     auto tmp = tex.to_cv_mat();
     cv::imshow("image", tmp);

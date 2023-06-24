@@ -25,7 +25,6 @@ void Earth()
 					RtColor opacity = { .9, .9, .9 };
 					RiColor(blue);
 					RiOpacity(opacity);
-					RiDisplacement(DISPLACEMENT_TYPE::PERLIN, 8, 0.3f);
 					RiTranslate(0, 0, 5.0);
 					RiRotate(-175, 0, 1, 0);
 					RiRotate(120, 1, 0, 0);
