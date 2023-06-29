@@ -2,7 +2,7 @@
 
 * This renderer is a Reyes-style Architecture Soft Rasterizer. It’s a partial implementation of [Renderman ver. 3.2 ][http://paulbourke.net/dataformats/rib/RISpec3_2.pdf]specification.
 
-![Snowman](https://s2.loli.net/2023/06/24/Yj3LMpSgbclDiWz.png)
+![Snowman](images/snowman.png)
 
 
 
@@ -13,11 +13,11 @@
   * Orthographic / Perspective Camera
   * ZBuffer
   * Perlin Noise Displacement
-  * MSAA
+  * MSAAs
   * Lighting and Shadow-mapping
   * Different render target (Normal, Depth, Albedo etc.)
 
-  <img src="https://s2.loli.net/2023/06/24/2rCl9s5fYuTnymG.png" alt="transparency_test_depth" style="zoom:50%;" />
+  ![Depth](images/depth.png)
 
   * Basic Phong and Microfacet material
   * Basic Primitives:
@@ -39,7 +39,7 @@
 * Per Reyes architecture, all primitives are diced (splitted into small pieces based on how many pixels it takes) into quads. This soft-rasterizer is a Quad-based renderer, and uses Bilinear Interpolation by default.
 * The coordinate system is left-handed, with the z-axis pointing inward the screen.
 
-<img src="https://s2.loli.net/2023/06/24/WTtRBY4KGL6a8sN.png" alt="image-20230623194458934" style="zoom:33%;" />
+![projection](images/projection.png)
 
 * The transformations and matrix APIs are written in a similar fashion to GLM library.
 
@@ -47,7 +47,7 @@
 
 #### Build Instructions:
 
-* This project uses CMake to build and is correctly build under M1 macOS environment. The C++ standard is set to C++ 17.
+* This project uses CMake to build and is correctly built under M1 macOS environment. The C++ standard is set to C++ 17.
 * Note that the project uses `OpenCV` for image IO (and it’s the only external dependency), and uses CMake’s `find_package` command. So please make sure your OpenCV is downloaded beforehand.
 * Once CMake and OpenCV is downloaded, execute shell command below.
 
@@ -62,9 +62,9 @@ make .
 
 #### Sample Usage:
 
-Below scene creates a sphere with basic texture mapping and perlin noise displacement. It’s compliant to the Renderman 3.2 specification.
+sBelow scene creates a sphere with basic texture mapping and perlin noise displacement. It’s compliant to the Renderman 3.2 specification.
 
-<img src="https://s2.loli.net/2023/06/24/2kRNAn4j7up6Wzl.png" alt="image-20230623192900780" style="zoom:50%;" />
+![earth](images/earth.png)
 
 ```c++
 using namespace gl;
@@ -154,3 +154,5 @@ void Basic_Shadow()
     scene.showImage();
 }
 ```
+
+[http://paulbourke.net/dataformats/rib/RISpec3_2.pdf]: 

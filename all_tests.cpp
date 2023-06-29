@@ -12,11 +12,11 @@ int main(){
     // auto trans_test = make_decorator(TransparencyTest);
     // trans_test();
 
-    // auto earth_test = make_decorator(Earth);
-    // earth_test();
+    auto earth_test = make_decorator(Earth);
+    earth_test();
 
-    auto snowman_Ri_test = make_decorator(snowman_ri);
-    snowman_Ri_test();
+    // auto snowman_Ri_test = make_decorator(snowman_ri);
+    // snowman_Ri_test();
 
     // auto shader_test = make_decorator(ShaderTest);
     // shader_test();
