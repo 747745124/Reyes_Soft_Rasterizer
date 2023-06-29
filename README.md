@@ -1,6 +1,6 @@
 ### Reyes-Style Renderer
 
-* This renderer is a Reyes-style Architecture Soft Rasterizer. It’s a partial implementation of [Renderman ver. 3.2 ][http://paulbourke.net/dataformats/rib/RISpec3_2.pdf]specification.
+* This renderer is a Reyes-style Architecture Soft Rasterizer. It’s a partial implementation of [Renderman ver. 3.2][http://paulbourke.net/dataformats/rib/RISpec3_2.pdf] specification.
 
 ![Snowman](images/snowman.png)
 
@@ -154,5 +154,3 @@ void Basic_Shadow()
     scene.showImage();
 }
 ```
-
-[http://paulbourke.net/dataformats/rib/RISpec3_2.pdf]: 
